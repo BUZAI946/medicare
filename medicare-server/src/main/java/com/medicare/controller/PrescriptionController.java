@@ -9,7 +9,7 @@ import com.medicare.dto.Result;
 import com.medicare.entity.Prescription;
 import com.medicare.entity.PrescriptionItem;
 import com.medicare.service.PrescriptionService;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

@@ -6,8 +6,8 @@ import com.medicare.dto.ChangePasswordRequest;
 import com.medicare.dto.Result;
 import com.medicare.entity.SysUser;
 import com.medicare.service.SysUserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,7 +1,7 @@
 package com.medicare.exception;
 
 import com.medicare.dto.Result;
-import jakarta.persistence.OptimisticLockException;
+import javax.persistence.OptimisticLockException;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -75,7 +75,8 @@ public class GlobalExceptionHandler {
     public Result<Void> handleDataIntegrityViolation(DataIntegrityViolationException e) {
         String message = "数据操作冲突";
         Throwable cause = e.getCause();
-        if (cause instanceof ConstraintViolationException cve) {
+        if (cause instanceof ConstraintViolationException) {
+            ConstraintViolationException cve = (ConstraintViolationException) cause;
             message = "数据约束冲突: " + cve.getConstraintName();
         }
         return Result.error(409, message);
