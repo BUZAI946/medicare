@@ -134,66 +134,6 @@
             </template>
           </el-dropdown>
         </div>
-
-        <div class="header-right">
-          <!-- 通知中心 -->
-          <el-popover placement="bottom" :width="360" trigger="click">
-            <template #reference>
-              <el-badge :value="unreadCount" :hidden="unreadCount===0" class="notify-badge">
-                <el-button circle>
-                  <el-icon :size="18"><Bell /></el-icon>
-                </el-button>
-              </el-badge>
-            </template>
-            <div class="notify-panel">
-              <div class="notify-panel-header">
-                <b>消息通知</b>
-                <el-button text size="small" type="primary" @click="markAllRead">全部已读</el-button>
-              </div>
-              <div class="notify-list">
-                <div v-for="n in notifications" :key="n.id" class="notify-item" :class="{ unread: !n.read }" @click="readNotify(n)">
-                  <div class="notify-icon" :style="{ background: n.color }">
-                    <el-icon :size="16"><component :is="n.icon" /></el-icon>
-                  </div>
-                  <div class="notify-body">
-                    <div class="notify-title">{{ n.title }}</div>
-                    <div class="notify-desc">{{ n.desc }}</div>
-                    <div class="notify-time">{{ n.time }}</div>
-                  </div>
-                  <div v-if="!n.read" class="notify-dot"></div>
-                </div>
-              </div>
-            </div>
-          </el-popover>
-
-          <!-- 用户下拉 -->
-          <el-dropdown trigger="click">
-            <div class="user-avatar">
-              <img :src="userAvatar" class="avatar-img" />
-              <span class="user-name">{{ userStore.currentUser?.realName || '未登录' }}</span>
-              <el-icon><ArrowDown /></el-icon>
-            </div>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item disabled>
-                  <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
-                    <img :src="userAvatar" style="width:36px;height:36px;border-radius:50%" />
-                    <div>
-                      <div style="font-weight:bold">{{ userStore.currentUser?.realName }}</div>
-                      <div style="font-size:12px;color:#909399">{{ roleText }}</div>
-                    </div>
-                  </div>
-                </el-dropdown-item>
-                <el-dropdown-item divided @click="$router.push('/settings')">
-                  <el-icon><Setting /></el-icon> 系统设置
-                </el-dropdown-item>
-                <el-dropdown-item @click="handleLogout">
-                  <el-icon><SwitchButton /></el-icon> 退出登录
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </div>
       </el-header>
 
       <el-main class="content">
