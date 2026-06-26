@@ -191,14 +191,6 @@
                 </div>
               </div>
             </el-card>
-<<<<<<< HEAD
-            <el-card shadow="hover" style="margin-top:16px">
-              <template #header>🔧 数据维护</template>
-              <p style="font-size:13px;color:#909399;margin-bottom:12px">重置系统数据到演示状态。此操作不可恢复。</p>
-              <el-button type="danger" @click="handleResetDemo">🔄 重置演示数据</el-button>
-            </el-card>
-=======
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
           </el-col>
         </el-row>
       </el-tab-pane>
@@ -313,7 +305,6 @@ function downloadCSV(filename: string, headers: string[], rows: string[][]) {
   const a = document.createElement('a')
   a.href = url; a.download = filename; a.click()
   URL.revokeObjectURL(url)
-<<<<<<< HEAD
 }
 const dataLoadings = reactive([false,false,false,false,false,false])
 function doExportReg() { dataLoadings[0]=true;setTimeout(()=>{downloadCSV('挂号记录_'+new Date().toISOString().slice(0,10)+'.csv',['ID','患者','医生','科室','时段','序号','状态','费用'],[['1','张伟','张伟','内科','上午','1','已完成','10.00'],['2','王小二','刘洋','儿科','上午','2','已完成','10.00'],['3','刘欣','李娜','内科','上午','3','已完成','10.00'],['4','黄磊','张伟','内科','上午','3','候诊','10.00'],['5','王芳','张伟','内科','上午','4','候诊','10.00']]);dataLoadings[0]=false;ElMessage.success('挂号数据已导出，共8条')},500) }
@@ -331,73 +322,6 @@ const dataCards=[
   {title:'生成统计报表',desc:'生成本月门诊运营数据统计报告',icon:'DataAnalysis',color:'#9b59b6',btnType:'primary',btnText:'生成报表',action:doReport},
 ]
 
-// ===== 快捷键 =====
-const shortcutList=[
-  {keys:['Ctrl','D'],desc:'打开数据分析大屏',page:'全局'},
-  {keys:['Ctrl','K'],desc:'全局搜索（快速查找）',page:'全局'},
-  {keys:['Ctrl','S'],desc:'保存当前表单',page:'全部页面'},
-  {keys:['Ctrl','N'],desc:'新建记录',page:'列表页'},
-  {keys:['Esc'],desc:'关闭弹窗/取消操作',page:'全域'},
-]
-
-// ===== 密码 =====
-const pwdFormRef=ref<FormInstance>()
-const pwdForm=reactive({oldPassword:'',newPassword:'',confirmPassword:''})
-const pwdRules:FormRules={
-  oldPassword:[{required:true,message:'请输入当前密码'}],
-  newPassword:[{required:true,message:'请输入新密码'},{min:6,message:'至少6位'}],
-  confirmPassword:[{required:true,message:'请确认新密码'},{validator:(_r,v,cb)=>{if(v!==pwdForm.newPassword)cb(new Error('两次密码不一致'));else cb()}}],
-}
-async function handleChangePassword(){await pwdFormRef.value?.validate();const uid=userStore.currentUser?.id;if(!uid)return;await updatePassword(uid,{oldPassword:pwdForm.oldPassword,newPassword:pwdForm.newPassword});ElMessage.success('密码修改成功，请重新登录');userStore.clearUser();router.push('/login')}
-
-async function handleResetDemo() {
-  try { await ElMessageBox.confirm('将清除所有挂号、处方、收费数据并重新生成演示排班。此操作不可恢复！', '确认重置', { type: 'error', confirmButtonText: '确定重置' }) } catch { return }
-  localStorage.removeItem('medicare-presc-templates')
-  localStorage.removeItem('medicare-guided')
-  ElMessage.success('演示数据已重置，正在刷新…')
-  setTimeout(() => window.location.reload(), 1000)
-=======
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
-}
-const dataLoadings = reactive([false,false,false,false,false,false])
-function doExportReg() { dataLoadings[0]=true;setTimeout(()=>{downloadCSV('挂号记录_'+new Date().toISOString().slice(0,10)+'.csv',['ID','患者','医生','科室','时段','序号','状态','费用'],[['1','张伟','张伟','内科','上午','1','已完成','10.00'],['2','王小二','刘洋','儿科','上午','2','已完成','10.00'],['3','刘欣','李娜','内科','上午','3','已完成','10.00'],['4','黄磊','张伟','内科','上午','3','候诊','10.00'],['5','王芳','张伟','内科','上午','4','候诊','10.00']]);dataLoadings[0]=false;ElMessage.success('挂号数据已导出，共8条')},500) }
-function doExportMed() { dataLoadings[1]=true;setTimeout(()=>{downloadCSV('药品清单_'+new Date().toISOString().slice(0,10)+'.csv',['ID','名称','规格','单位','库存','安全库存','单价','厂家'],[['1','阿莫西林胶囊','0.25g*24粒','盒','766','50','12.50','华北制药'],['2','布洛芬缓释胶囊','0.3g*20粒','盒','298','30','18.00','芬必得'],['3','感冒清热颗粒','12g*10袋','盒','8','20','15.80','同仁堂'],['4','头孢克肟片','0.1g*6片','盒','1150','15','28.50','白云山'],['11','左氧氟沙星胶囊','0.5g*24粒','盒','0','10','23.40','太极制药集团']]);dataLoadings[1]=false;ElMessage.success('药品清单已导出，共7种')},500) }
-function doClearCache() { dataLoadings[2]=true;setTimeout(()=>{localStorage.clear();sessionStorage.clear();dataLoadings[2]=false;ElMessage.success('缓存已清除，释放 15.8MB')},600) }
-function doDiagnose() { dataLoadings[3]=true;setTimeout(()=>{dataLoadings[3]=false;ElMessage.success('✅ 全部正常：数据库延迟12ms | CPU 23% | 内存 58% | 磁盘 82%可用')},1000) }
-function doReset() { dataLoadings[4]=true;setTimeout(()=>{dataLoadings[4]=false;ElMessage.success('演示数据已重置，请刷新页面查看')},600) }
-function doReport() { dataLoadings[5]=true;setTimeout(()=>{downloadCSV('月度统计报表_'+new Date().toISOString().slice(0,7)+'.csv',['指标','数值','同比','环比'],[['总挂号数','186','↑12%','↑5%'],['就诊完成率','92%','↑3%','持平'],['处方总数','73','↑8%','↑2%'],['药品消耗','1,250件','↓2%','↑6%'],['库存预警次数','15','↓20%','↓8%']]);dataLoadings[5]=false;ElMessage.success('月度统计报表已生成并下载')},800) }
-const dataCards=[
-  {title:'导出挂号数据',desc:'将今日挂号记录导出为 CSV 文件',icon:'Download',color:'#409eff',btnType:'primary',btnText:'导出 CSV',action:doExportReg},
-  {title:'导出药品清单',desc:'将全部药品库存数据导出为 CSV 文件',icon:'List',color:'#67c23a',btnType:'success',btnText:'导出 CSV',action:doExportMed},
-  {title:'清除缓存数据',desc:'清理系统缓存与临时文件，释放空间',icon:'Delete',color:'#e6a23c',btnType:'warning',btnText:'清除缓存',action:doClearCache},
-  {title:'系统诊断检测',desc:'检测数据库连接、磁盘空间、服务状态',icon:'Monitor',color:'#909399',btnType:'info',btnText:'开始检测',action:doDiagnose},
-  {title:'重置演示数据',desc:'将所有数据恢复为初始演示数据',icon:'Refresh',color:'#f56c6c',btnType:'danger',btnText:'重置数据',action:doReset},
-  {title:'生成统计报表',desc:'生成本月门诊运营数据统计报告',icon:'DataAnalysis',color:'#9b59b6',btnType:'primary',btnText:'生成报表',action:doReport},
-]
-
-<<<<<<< HEAD
-// ===== 日志 =====
-const logKw=ref('')
-const logList=ref([
-  {id:1,time:'2026-06-24 08:30',color:'#409eff',tagType:'warning',module:'登录',action:'admin 登录系统',detail:'IP: 192.168.1.15 | 浏览器: Edge 14'},
-  {id:2,time:'2026-06-24 08:15',color:'#67c23a',tagType:'success',module:'挂号',action:'患者"王芳"挂号成功',detail:'科室: 内科 | 医生: 张伟 | 时段: 上午'},
-  {id:3,time:'2026-06-24 07:45',color:'#e6a23c',tagType:'danger',module:'库存',action:'库存预警提醒',detail:'感冒清热颗粒 库存8 < 安全线20，建议补货'},
-  {id:4,time:'2026-06-24 07:00',color:'#909399',tagType:'info',module:'系统',action:'数据库自动备份完成',detail:'备份文件: medicare_20260624.sql'},
-])
-const filteredLogs=computed(()=>{if(!logKw.value)return logList.value;return logList.value.filter(l=>l.action.includes(logKw.value)||l.detail.includes(logKw.value)||l.module.includes(logKw.value))})
-function loadLogs(){ElMessage.success('日志已刷新')}
-
-// ===== 统计 =====
-const sysStats=computed(()=>[
-  {label:'系统用户',value:userList.value.length,icon:'User',color:'#409eff'},
-  {label:'药品种类',value:7,icon:'FirstAidKit',color:'#67c23a'},
-  {label:'今日挂号',value:8,icon:'Calendar',color:'#e6a23c'},
-  {label:'病历记录',value:4,icon:'Document',color:'#f56c6c'},
-  {label:'处方数量',value:2,icon:'Notebook',color:'#9b59b6'},
-  {label:'运行天数',value:174,icon:'Clock',color:'#909399'},
-])
-
-=======
 // ===== 快捷键 =====
 const shortcutList=[
   {keys:['Ctrl','D'],desc:'打开数据分析大屏',page:'全局'},
@@ -438,7 +362,6 @@ const sysStats=computed(()=>[
   {label:'运行天数',value:174,icon:'Clock',color:'#909399'},
 ])
 
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 onMounted(()=>{
   if(userStore.hasRole('admin')){loadUsers();loadDoctors()}else{activeTab.value='password'}
 })

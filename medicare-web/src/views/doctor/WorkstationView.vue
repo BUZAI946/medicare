@@ -12,24 +12,7 @@
       <template #header>
         <div class="ai-header">
           <span class="ai-title">
-<<<<<<< HEAD
-            <!-- 动态AI神经网络模型 -->
-            <span class="ai-neural-model" :class="{ thinking: aiLoading }">
-              <span class="nn-core"></span>
-              <span class="nn-ring r1"></span>
-              <span class="nn-ring r2"></span>
-              <span class="nn-ring r3"></span>
-              <span class="nn-node n1"></span>
-              <span class="nn-node n2"></span>
-              <span class="nn-node n3"></span>
-              <span class="nn-node n4"></span>
-              <span class="nn-dot d1"></span>
-              <span class="nn-dot d2"></span>
-              <span class="nn-dot d3"></span>
-            </span>
-=======
             <span class="ai-brain-icon" :class="{ thinking: aiLoading }">🧠</span>
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
             AI 智能辅助诊断系统
           </span>
           <div class="ai-header-right">
@@ -161,18 +144,7 @@
         <!-- 右侧病历书写 -->
         <el-col :span="14">
           <el-card v-if="selectedReg && selectedReg.status===1" class="record-card">
-<<<<<<< HEAD
-            <template #header>
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <span>📋 病历书写 — {{ selectedReg.patientName }}</span>
-                <el-button size="small" :type="listening ? 'danger' : 'default'" @click="toggleVoice" :icon="listening ? 'Microphone' : 'Microphone'">
-                  {{ listening ? '🔴 录音中…' : '🎤 语音录入' }}
-                </el-button>
-              </div>
-            </template>
-=======
             <template #header>📋 病历书写 — {{ selectedReg.patientName }}</template>
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
             <el-form ref="recordFormRef" :model="recordForm" label-width="90px" size="default">
               <el-row :gutter="12">
                 <el-col :span="12">
@@ -222,11 +194,7 @@ const recordForm = reactive<Partial<MedicalRecord>>({
 const aiInput = ref('')
 const aiLoading = ref(false)
 const aiResult = ref<any>(null)
-<<<<<<< HEAD
-const quickSymptoms = ['头痛', '发热', '咳嗽', '腹痛', '头晕', '过敏', '胸闷', '乏力', '恶心', '咽痛', '关节痛', '失眠', '高血压', '糖尿病', '腰背痛']
-=======
 const quickSymptoms = ['头痛', '发热', '咳嗽', '腹痛', '头晕', '过敏', '胸闷', '乏力', '恶心']
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 
 // 增强知识库 — 20+ 症状覆盖
 const knowledge: Record<string, any> = {
@@ -239,15 +207,6 @@ const knowledge: Record<string, any> = {
   '胸闷': { severity:65, level:'high', diagnoses:[{name:'冠心病/心绞痛',probability:35,color:'#f56c6c'},{name:'焦虑/心脏神经症',probability:30,color:'#409eff'},{name:'支气管哮喘',probability:20,color:'#e6a23c'},{name:'胃食管反流',probability:15,color:'#409eff'}], medication:'心绞痛：硝酸甘油 0.5mg 舌下含服（诊断性治疗）\n哮喘：沙丁胺醇吸入剂 PRN\n反流：奥美拉唑 20mg bid', examination:'心电图（必查！）\n心肌酶谱+肌钙蛋白\n胸部X光\n必要时冠脉CTA\n24h动态心电图', advice:'⚠ 胸痛持续>20分钟→立即急诊排除心梗！\n戒烟+控制血压/血脂/血糖\n避免剧烈运动至明确诊断\n记录胸痛诱因/性质/持续时间', drugWarnings:'硝酸甘油+西地那非（伟哥）→致命性低血压\n多种降压药可能加重症状' },
   '乏力': { severity:30, level:'mid', diagnoses:[{name:'亚健康/睡眠不足',probability:40,color:'#409eff'},{name:'贫血',probability:28,color:'#e6a23c'},{name:'甲状腺功能减退',probability:18,color:'#409eff'},{name:'慢性疲劳综合征',probability:14,color:'#e6a23c'}], medication:'贫血→根据类型补铁/B12\n甲减→左甲状腺素钠（需确诊后）\n一般：复合维生素B族+辅酶Q10', examination:'血常规+铁蛋白\n甲状腺功能（TSH/FT3/FT4）\n血糖+糖化血红蛋白\n必要时睡眠监测', advice:'保证7-8小时睡眠\n适度有氧运动（每周150分钟）\n均衡饮食+足量蛋白质\n持续>2周需进一步检查', drugWarnings:'铁剂+左甲状腺素→间隔4小时服用\n铁剂+茶/咖啡→影响吸收' },
   '恶心': { severity:35, level:'mid', diagnoses:[{name:'急性胃炎',probability:45,color:'#e6a23c'},{name:'妊娠反应',probability:25,color:'#409eff'},{name:'药物不良反应',probability:18,color:'#e6a23c'},{name:'前庭功能障碍',probability:12,color:'#409eff'}], medication:'甲氧氯普胺 10mg tid PRN\n维生素B6 20mg tid\n妊娠：首选B6+多西拉敏', examination:'育龄女性→尿HCG（必查）\n腹部B超\n胃镜（持续>2周）\n用药史详细询问', advice:'少量多餐，避免油腻\n生姜茶可缓解轻度恶心\n持续呕吐→注意电解质紊乱\n育龄女性首先排除妊娠', drugWarnings:'甲氧氯普胺+抗精神病药→锥体外系反应风险\n长期使用甲氧氯普胺不超过12周' },
-<<<<<<< HEAD
-  '咽痛': { severity:40, level:'mid', diagnoses:[{name:'急性咽炎',probability:55,color:'#e6a23c'},{name:'扁桃体炎',probability:25,color:'#f56c6c'},{name:'链球菌咽炎',probability:12,color:'#f56c6c'},{name:'咽喉反流',probability:8,color:'#409eff'}], medication:'细菌性：阿莫西林 0.5g tid×7天\n对症：布洛芬 0.2g PRN 止痛\n含漱：复方氯己定含漱液 tid\n反流性：奥美拉唑 20mg bid', examination:'咽部查体（扁桃体肿大/脓点）\n链球菌快速抗原检测\n血常规+CRP\n必要时喉镜', advice:'多饮温水，避免辛辣刺激\n盐水漱口（3次/天）\n链球菌感染→足程抗生素治疗（预防风湿热）\n持续>2周需排查其他病因', drugWarnings:'阿莫西林过敏史→改用阿奇霉素或头孢类\n布洛芬可能掩盖感染进展' },
-  '关节痛': { severity:45, level:'mid', diagnoses:[{name:'骨关节炎',probability:40,color:'#e6a23c'},{name:'类风湿关节炎',probability:22,color:'#f56c6c'},{name:'痛风性关节炎',probability:20,color:'#f56c6c'},{name:'运动损伤',probability:18,color:'#409eff'}], medication:'骨关节炎：对乙酰氨基酚 0.5g tid+氨基葡萄糖\n痛风急性期：秋水仙碱 1mg 负荷+0.5mg q1h\n类风湿：布洛芬 0.4g tid+建议风湿科就诊', examination:'血尿酸（痛风筛查）\n类风湿因子+抗CCP抗体\n关节X光/超声\nESR+CRP', advice:'急性期休息制动\n痛风→低嘌呤饮食（禁酒/海鲜/内脏）\n适度关节活动防止僵硬\n肥胖者建议减重', drugWarnings:'布洛芬+阿司匹林→增加消化道出血\n秋水仙碱+P-糖蛋白抑制剂→毒性增加' },
-  '失眠': { severity:30, level:'mid', diagnoses:[{name:'原发性失眠',probability:50,color:'#409eff'},{name:'焦虑相关失眠',probability:28,color:'#e6a23c'},{name:'昼夜节律紊乱',probability:14,color:'#409eff'},{name:'器质性疾病相关',probability:8,color:'#f56c6c'}], medication:'短期（<2周）：右佐匹克隆 2mg qn PRN\n长期：认知行为治疗(CBT-I)为主\n伴焦虑：艾司唑仑 1mg qn', examination:'睡眠量表评估（PSQI）\n排除甲亢（TSH）\n必要时多导睡眠监测\n心理评估', advice:'固定作息时间（误差<30min）\n睡前1小时关闭电子设备\n避免咖啡因/酒精\n坚持睡眠限制疗法', drugWarnings:'苯二氮䓬类→依赖性风险，不超过4周\n佐匹克隆+酒精→呼吸抑制风险' },
-  '高血压': { severity:55, level:'high', diagnoses:[{name:'原发性高血压',probability:60,color:'#f56c6c'},{name:'继发性高血压',probability:18,color:'#e6a23c'},{name:'白大衣高血压',probability:12,color:'#409eff'},{name:'肾性高血压',probability:10,color:'#f56c6c'}], medication:'一线：ACEI/ARB（如培哚普利4mg qd）\n或CCB（氨氯地平 5mg qd）\n血压≥160/100→联合用药\n目标：<140/90mmHg（一般）<130/80（糖尿病/肾病）', examination:'24h动态血压监测\n心电图+超声心动图\n肾功能+电解质+尿微量白蛋白\n眼底检查', advice:'低盐饮食（<5g/天）\n每周运动≥150分钟\n戒烟限酒\n家庭自测血压（每日早晚各1次）\n每3个月复查', drugWarnings:'ACEI+ARB联用→肾损伤风险\n降压药+西地那非→致命低血压\n勿擅自停药' },
-  '糖尿病': { severity:60, level:'high', diagnoses:[{name:'2型糖尿病',probability:70,color:'#f56c6c'},{name:'1型糖尿病',probability:12,color:'#f56c6c'},{name:'糖耐量异常',probability:10,color:'#e6a23c'},{name:'妊娠期糖尿病',probability:8,color:'#409eff'}], medication:'一线：二甲双胍 0.5g bid（餐后服用）\n血糖不达标→加SGLT-2i（达格列净）\nHbA1c>9%→考虑胰岛素', examination:'空腹血糖+餐后2h血糖\nHbA1c（糖化血红蛋白）\nOGTT（口服糖耐量试验）\n尿微量白蛋白+眼底检查\n血脂全套', advice:'控制总热量摄入\n碳水占50-55%\n每周运动≥150分钟\n足部每日检查（防糖尿病足）\n每3-6个月复查HbA1c', drugWarnings:'二甲双胍+造影剂→乳酸酸中毒（暂停48h）\n二甲双胍可引起腹泻→餐后服用可减轻' },
-  '腰背痛': { severity:40, level:'mid', diagnoses:[{name:'腰肌劳损',probability:45,color:'#409eff'},{name:'腰椎间盘突出',probability:28,color:'#e6a23c'},{name:'腰椎退行性变',probability:15,color:'#409eff'},{name:'肾结石/泌尿系疾病',probability:12,color:'#f56c6c'}], medication:'急性期：布洛芬 0.4g tid+乙哌立松 50mg tid\n外用：双氯芬酸二乙胺乳胶剂\n神经痛：普瑞巴林 75mg bid', examination:'腰椎X光/MRI\n直腿抬高试验\n尿常规（排除肾结石）\n骨密度（>50岁或绝经后）', advice:'急性期卧床休息1-3天\n缓解后进行核心肌群训练\n纠正不良姿势\n避免久坐（每小时起身活动）\n肥胖者建议减重', drugWarnings:'布洛芬长期使用→消化道/肾损伤\n乙哌立松可能引起嗜睡→避免驾车' },
-=======
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 }
 
 function runAI() {
@@ -262,55 +221,12 @@ function runAI() {
         matches.push({ key, ...value, matchLen: key.length })
       }
     }
-<<<<<<< HEAD
-    matches.sort((a, b) => b.matchLen - a.matchLen)
-=======
     // 按匹配长度排序，取最佳匹配
     matches.sort((a,b) => b.matchLen - a.matchLen)
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 
     let result: any
     if (matches.length > 0) {
       const best = matches[0]
-<<<<<<< HEAD
-      // 合并多症状的诊断（去重）
-      const allDiags = new Map<string, any>()
-      for (const m of matches) {
-        for (const d of (m.diagnoses || [])) {
-          const existing = allDiags.get(d.name)
-          if (!existing || d.probability > existing.probability) {
-            allDiags.set(d.name, d)
-          }
-        }
-      }
-      const mergedDiags = Array.from(allDiags.values()).sort((a, b) => b.probability - a.probability).slice(0, 5)
-
-      // 合并用药建议
-      const medLines = new Set<string>()
-      for (const m of matches) {
-        if (m.medication) m.medication.split('\n').forEach((l: string) => medLines.add(l))
-      }
-      const mergedMed = Array.from(medLines).slice(0, 6).join('\n')
-
-      // 合并检查
-      const examLines = new Set<string>()
-      for (const m of matches) {
-        if (m.examination) m.examination.split('\n').forEach((l: string) => examLines.add(l))
-      }
-      const mergedExam = Array.from(examLines).slice(0, 8).join('\n')
-
-      let sev = best.severity
-      if (matches.length > 1) sev = Math.min(sev + matches.length * 10, 95)
-
-      result = {
-        diagnoses: mergedDiags,
-        medication: mergedMed,
-        examination: mergedExam,
-        advice: matches.map(m => m.advice).filter(Boolean).join('\n\n'),
-        severity: sev,
-        level: sev >= 60 ? 'high' : sev >= 35 ? 'mid' : 'low',
-        drugWarnings: matches.map(m => m.drugWarnings).filter(Boolean).join('\n') || undefined,
-=======
       // 计算总体严重程度
       let sev = best.severity
       if (matches.length > 1) sev = Math.min(sev + matches.length * 8, 95)
@@ -318,35 +234,22 @@ function runAI() {
         ...best,
         severity: sev,
         level: sev >= 60 ? 'high' : sev >= 35 ? 'mid' : 'low',
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
       }
     } else {
       result = {
         severity: 25, level: 'low',
         diagnoses: [{name:'症状信息不足',probability:60,color:'#909399'},{name:'建议进一步问诊',probability:40,color:'#409eff'}],
         medication: '请详细描述症状（部位、性质、持续时间、诱因、伴随症状）后重新分析',
-<<<<<<< HEAD
-        examination: '建议完成基础查体：血压、心率、体温、呼吸频率',
-        advice: '按SOCRATES框架描述：\nS-部位 O-性质 C-时间 R-放射 A-伴随 T-时间 E-加重/缓解\n详细问诊后再行AI分析',
-        drugWarnings: ''
-=======
         examination: '建议完成基础查体：血压、心率、体温、呼吸频率', advice: '建议按照SOCRATES框架描述症状：\nS-部位 O-性质 C-时间 R-放射 A-伴随 T-时间 E-加重/缓解因素\n详细问诊后再行AI分析', drugWarnings: ''
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
       }
     }
     aiResult.value = result; aiLoading.value = false
     if (result.level === 'high') {
       ElMessage.warning('⚠ 检测到高风险症状，请优先关注！')
     } else {
-<<<<<<< HEAD
-      ElMessage.success(`AI 分析完成（匹配${matches.length}个症状）`)
-    }
-  }, 1500)
-=======
       ElMessage.success('AI 深度分析完成')
     }
   }, 1200)
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 }
 
 function quickAnalyze(symptom: string) { aiInput.value = symptom; runAI() }
@@ -428,102 +331,6 @@ onMounted(loadDoctors)
 .ai-header-right { display: flex; align-items: center; gap: 8px; }
 .ai-title { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 17px; }
 
-<<<<<<< HEAD
-/* ===== AI神经网络动态模型 ===== */
-.ai-neural-model {
-  position: relative; width: 42px; height: 42px; display: inline-flex;
-  align-items: center; justify-content: center;
-  animation: nnFloat 4s ease-in-out infinite;
-}
-.ai-neural-model.thinking { animation: nnFloat 1s ease-in-out infinite; }
-
-/* 中央核心 — 渐变发光圆 */
-.nn-core {
-  width: 12px; height: 12px; border-radius: 50%; z-index: 3;
-  background: radial-gradient(circle, #818cf8, #6366f1);
-  box-shadow: 0 0 10px 2px rgba(99,102,241,0.6), 0 0 20px 4px rgba(139,92,246,0.3);
-  animation: nnCorePulse 2s ease-in-out infinite;
-}
-@keyframes nnCorePulse { 0%,100%{transform:scale(1);box-shadow:0 0 10px 2px rgba(99,102,241,0.6),0 0 20px 4px rgba(139,92,246,0.3)} 50%{transform:scale(1.3);box-shadow:0 0 16px 4px rgba(99,102,241,0.9),0 0 30px 8px rgba(139,92,246,0.5)} }
-
-/* 三层轨道环 */
-.nn-ring {
-  position: absolute; border-radius: 50%;
-  border: 1.5px solid rgba(99,102,241,0.3);
-  animation: nnRingSpin linear infinite;
-}
-.nn-ring.r1 { width: 28px; height: 28px; border-color: rgba(99,102,241,0.25); animation-duration: 6s; }
-.nn-ring.r2 { width: 36px; height: 36px; border-color: rgba(139,92,246,0.2); animation-duration: 8s; transform: rotate(60deg); }
-.nn-ring.r3 { width: 44px; height: 44px; border-color: rgba(168,85,247,0.15); animation-duration: 10s; transform: rotate(-30deg); }
-@keyframes nnRingSpin { 100% { transform: rotate(360deg); } }
-
-/* 轨道上的节点 — 小球绕圈 */
-.nn-node {
-  position: absolute; width: 5px; height: 5px; border-radius: 50%;
-  background: #a78bfa; box-shadow: 0 0 4px rgba(167,139,250,0.6);
-  animation: nnNodeOrbit linear infinite;
-}
-.nn-node.n1 { animation-duration: 4s; }
-.nn-node.n2 { animation-duration: 5s; }
-.nn-node.n3 { animation-duration: 3.5s; }
-.nn-node.n4 { animation-duration: 5.5s; }
-@keyframes nnNodeOrbit {
-  0%   { transform: rotate(0deg) translateX(14px) rotate(0deg); }
-  100% { transform: rotate(360deg) translateX(14px) rotate(-360deg); }
-}
-
-/* 游离数据点 — 进出核心 */
-.nn-dot {
-  position: absolute; width: 3px; height: 3px; border-radius: 50%;
-  background: #c4b5fd;
-  animation: nnDotFlow 2.5s ease-in-out infinite;
-}
-.nn-dot.d1 { animation-delay: 0s; }
-.nn-dot.d2 { animation-delay: 0.8s; }
-.nn-dot.d3 { animation-delay: 1.6s; }
-@keyframes nnDotFlow {
-  0%   { transform: scale(0); opacity: 0; }
-  40%  { transform: scale(1.5); opacity: 0.9; }
-  60%  { transform: scale(1); opacity: 0.5; }
-  100% { transform: scale(0); opacity: 0; }
-}
-
-@keyframes nnFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
-
-/* AI脉冲点 */
-.ai-pulse { width:10px; height:10px; border-radius:50%; background:#6366f1; display:inline-block; animation:aiPulse 1.5s ease-in-out infinite; }
-@keyframes aiPulse { 0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0.6)} 50%{box-shadow:0 0 0 10px rgba(99,102,241,0)} }
-
-/* 输入图标旋转 */
-.ai-input-icon { display: inline-block; transition: all 0.3s; }
-.ai-input-icon.spinning { animation: dnaSpin 0.8s linear infinite; }
-@keyframes dnaSpin { 100%{transform:rotate(360deg)} }
-
-.ai-body { padding: 4px 0; }
-.ai-input-row { margin: 12px 0; }
-.ai-analyze-btn { font-weight: bold; letter-spacing: 1px; }
-
-/* 快捷症状标签 */
-.ai-quick-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; }
-.quick-label { font-size: 12px; color: #909399; }
-.symptom-tag { cursor: pointer; transition: all 0.2s; }
-.symptom-tag:hover { transform: translateY(-2px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-
-/* 加载动画 */
-.ai-thinking { display: flex; align-items: center; gap: 10px; padding: 12px; background: #f0f5ff; border-radius: 8px; color: #6366f1; font-size: 13px; }
-.think-dots { display: flex; gap: 4px; }
-.think-dots span { width: 8px; height: 8px; border-radius: 50%; background: #6366f1; animation: dotBounce 1.4s ease-in-out infinite; }
-.think-dots span:nth-child(2) { animation-delay: 0.2s; }
-.think-dots span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes dotBounce { 0%,80%,100%{transform:scale(0)} 40%{transform:scale(1)} }
-
-/* 结果面板 */
-.ai-result {
-  background: #fff; border-radius: 12px; padding: 18px;
-  border: 1px solid #e8ecf1; margin-top: 12px;
-  animation: slideUp 0.4s ease; box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-}
-=======
 /* 大脑图标动画 */
 .ai-brain-icon { display: inline-block; font-size: 26px; animation: brainFloat 3s ease-in-out infinite; }
 .ai-brain-icon.thinking { animation: brainSpin 0.6s ease-in-out infinite; }
@@ -563,7 +370,6 @@ onMounted(loadDoctors)
   border: 1px solid #e8ecf1; margin-top: 12px;
   animation: slideUp 0.4s ease; box-shadow: 0 2px 12px rgba(0,0,0,0.04);
 }
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 
 /* 严重程度条 */

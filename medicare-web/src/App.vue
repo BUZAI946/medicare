@@ -71,34 +71,12 @@ body {
 .fade-slide-enter-from { opacity: 0; transform: translateX(16px) scale(0.96); }
 .fade-slide-leave-to { opacity: 0; transform: translateX(-10px) scale(0.98); }
 
-<<<<<<< HEAD
-/* 卡片 — 玻璃质感 */
-.el-card {
-  border-radius: 14px !important;
-  background: rgba(255,255,255,0.78) !important;
-  backdrop-filter: blur(12px) saturate(1.2);
-  border: 1px solid rgba(255,255,255,0.6) !important;
-  transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
-  position: relative; overflow: hidden;
-}
-.el-card::after {
-  content: ''; position: absolute; inset: 0; border-radius: 14px; pointer-events: none;
-  background: linear-gradient(135deg, rgba(102,126,234,0.04) 0%, rgba(118,75,162,0.02) 100%);
-  opacity: 0; transition: opacity 0.35s;
-}
-.el-card:hover {
-  transform: translateY(-4px) scale(1.008);
-  box-shadow: 0 12px 32px rgba(102,126,234,0.12), 0 4px 10px rgba(0,0,0,0.06);
-}
-.el-card:hover::after { opacity: 1; }
-=======
 /* 卡片 */
 .el-card {
   border-radius: 10px !important; background: rgba(255,255,255,0.75) !important;
   backdrop-filter: blur(10px); transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .el-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 
 /* 按钮点击反馈 */
 .el-button { border-radius: 8px !important; transition: all 0.2s ease; position: relative; overflow: hidden; }
@@ -148,25 +126,4 @@ body {
 /* 页面内容整体进入动画 */
 .el-main > div { animation: contentFadeIn 0.4s ease; }
 @keyframes contentFadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-<<<<<<< HEAD
-
-/* ===== 暗色模式 ===== */
-.dark-mode body, .dark-mode #app { background: #0d1117 !important; }
-.dark-mode .el-card { background: rgba(30,35,45,0.85) !important; border-color: rgba(255,255,255,0.06) !important; }
-.dark-mode .el-card:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.4) !important; }
-.dark-mode .el-table { --el-table-bg-color: rgba(30,35,45,0.7); --el-table-tr-bg-color: rgba(30,35,45,0.7); }
-.dark-mode .el-table th.el-table__cell { background: rgba(20,24,30,0.8) !important; color: rgba(255,255,255,0.7) !important; }
-.dark-mode .el-table td.el-table__cell { color: rgba(255,255,255,0.75) !important; }
-.dark-mode .el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell { background: rgba(40,46,55,0.5) !important; }
-.dark-mode .el-input__wrapper { background: rgba(255,255,255,0.06) !important; box-shadow: 0 0 0 1px rgba(255,255,255,0.1) !important; }
-.dark-mode .el-input__inner { color: rgba(255,255,255,0.85) !important; }
-.dark-mode .el-select .el-input__wrapper { background: rgba(255,255,255,0.06) !important; }
-.dark-mode .el-dialog { background: #1a1d24 !important; }
-.dark-mode .el-pagination button, .dark-mode .el-pager li { background: rgba(30,35,45,0.7) !important; color: rgba(255,255,255,0.7) !important; }
-.dark-mode .el-tag { border-color: transparent !important; }
-.dark-mode .page-hero { box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-.dark-mode .header { background: rgba(13,17,23,0.8) !important; border-bottom-color: rgba(255,255,255,0.06) !important; }
-.dark-mode .sidebar { background: linear-gradient(180deg, #0d1117 0%, #111820 50%, #0f1923 100%) !important; }
-=======
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 </style>

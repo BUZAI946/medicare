@@ -75,21 +75,6 @@
           <span class="bubble b3"></span>
         </div>
 
-<<<<<<< HEAD
-        <!-- 搜索 + 暗色模式 -->
-        <div class="header-center">
-          <div class="search-bubble">
-            <div class="search-circle">
-              <el-icon :size="18"><Search /></el-icon>
-            </div>
-            <el-input v-model="globalKw" placeholder="搜索患者姓名/手机号…" size="small" class="search-input" @keyup.enter="doGlobalSearch" clearable>
-              <template #prefix><el-icon><Search /></el-icon></template>
-            </el-input>
-          </div>
-          <el-button circle size="small" class="dark-toggle" @click="toggleDarkMode" :title="isDark ? '切换亮色' : '切换暗色'">
-            <el-icon :size="16"><component :is="isDark ? 'Sunny' : 'Moon'" /></el-icon>
-          </el-button>
-=======
         <div class="header-right">
           <!-- 通知中心 -->
           <el-popover placement="bottom" :width="360" trigger="click">
@@ -148,7 +133,6 @@
               </el-dropdown-menu>
             </template>
           </el-dropdown>
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
         </div>
 
         <div class="header-right">
@@ -236,39 +220,11 @@
 </template>
 
 <script setup lang="ts">
-<<<<<<< HEAD
-import { ref, computed, reactive, watch } from 'vue'
-=======
 import { ref, computed, reactive } from 'vue'
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../../stores/user'
 import { avatarUrl } from '../../utils/avatar'
-<<<<<<< HEAD
-
-// 全局搜索
-const globalKw = ref('')
-function doGlobalSearch() {
-  const kw = globalKw.value.trim()
-  if (!kw) return
-  router.push({ path: '/patients', query: { search: kw } })
-  globalKw.value = ''
-}
-
-// 暗色模式
-const isDark = ref(localStorage.getItem('medicare-dark') === '1')
-function toggleDarkMode() {
-  isDark.value = !isDark.value
-  localStorage.setItem('medicare-dark', isDark.value ? '1' : '0')
-  applyDarkMode()
-}
-function applyDarkMode() {
-  document.documentElement.classList.toggle('dark-mode', isDark.value)
-}
-applyDarkMode()
-=======
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 
 const route = useRoute()
 const router = useRouter()
@@ -367,11 +323,7 @@ function closeGuide() { showGuide.value = false; localStorage.setItem('medicare-
 .header {
   display: flex; align-items: center; justify-content: space-between;
   background: rgba(26,26,46,0.55); backdrop-filter: blur(16px);
-<<<<<<< HEAD
-  padding: 0 20px; height: 56px; z-index: 10; position: relative;
-=======
   padding: 0 20px; height: 56px; z-index: 10;
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
   border-bottom: 1px solid rgba(255,255,255,0.1);
   position: relative; overflow: hidden;
 }
@@ -380,23 +332,12 @@ function closeGuide() { showGuide.value = false; localStorage.setItem('medicare-
 .header .el-breadcrumb :deep(.el-breadcrumb__inner) { color: rgba(255,255,255,0.7); }
 .header .el-breadcrumb :deep(.el-breadcrumb__inner:hover) { color: #fff; }
 .user-name { color: rgba(255,255,255,0.85) !important; }
-<<<<<<< HEAD
-.header-left { display: flex; align-items: center; gap: 16px; position: relative; z-index: 3; }
-.collapse-btn { cursor: pointer; color: rgba(255,255,255,0.7) !important; transition: color 0.3s; }
-.collapse-btn:hover { color: #fff !important; }
-
-.header-right { display: flex; align-items: center; gap: 20px; position: relative; z-index: 3; }
-
-/* 小海豚 */
-.dolphin-area { position: absolute; top: 0; left: 0; right: 0; height: 100%; pointer-events: none; z-index: 1; overflow: hidden; }
-=======
 .header-left { display: flex; align-items: center; gap: 16px; }
 .collapse-btn { cursor: pointer; color: #606266; transition: color 0.3s; }
 .collapse-btn:hover { color: #409eff; }
 
 /* 小海豚 */
 .dolphin-area { flex: 1; height: 100%; position: relative; overflow: hidden; }
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 
 /* 外层：匀速水平游动 + 转身 */
 .dolphin-wrap {
@@ -482,64 +423,6 @@ function closeGuide() { showGuide.value = false; localStorage.setItem('medicare-
   100% { opacity: 0; transform: translate(5px, -26px) scale(1.1); }
 }
 
-<<<<<<< HEAD
-.header-center { display: flex; align-items: center; gap: 10px; flex: 0.8; justify-content: center; position: relative; z-index: 5; }
-/* 搜索 — 玻璃圆圈悬停展开 */
-.search-bubble {
-  position: relative; width: 34px; height: 34px;
-  transition: width 0.45s cubic-bezier(0.22,0.61,0.36,1);
-}
-.search-bubble:hover { width: 250px; }
-.search-circle {
-  position: absolute; inset: 0; width: 34px; height: 34px; border-radius: 50%;
-  background: rgba(255,255,255,0.06);
-  backdrop-filter: blur(6px);
-  border: 1.2px solid rgba(255,255,255,0.18);
-  display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,0.75); cursor: pointer; z-index: 2;
-  overflow: hidden;
-  animation: searchPulse 2.5s ease-in-out infinite;
-  transition: opacity 0.25s, border-color 0.3s;
-}
-/* 内部光点旋转 */
-.search-circle::before {
-  content: ''; position: absolute; inset: -6px; border-radius: 50%;
-  background: conic-gradient(from 0deg, transparent 60%, rgba(102,126,234,0.5) 80%, rgba(192,132,252,0.6) 90%, transparent 100%);
-  animation: searchSpin 3s linear infinite;
-}
-/* 内部微光 */
-.search-circle::after {
-  content: ''; position: absolute; width: 14px; height: 14px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.7), rgba(167,139,250,0.4));
-  animation: searchDot 2s ease-in-out infinite;
-}
-.search-circle:hover { border-color: rgba(255,255,255,0.4); }
-@keyframes searchSpin { 100% { transform: rotate(360deg); } }
-@keyframes searchDot {
-  0%, 100% { transform: scale(0.6); opacity: 0.4; }
-  50%      { transform: scale(1.2); opacity: 0.9; }
-}
-@keyframes searchPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(102,126,234,0.3), 0 0 6px rgba(102,126,234,0.15); }
-  50%      { box-shadow: 0 0 0 10px rgba(102,126,234,0), 0 0 16px rgba(118,75,162,0.3); }
-}
-.search-bubble:hover .search-circle { opacity: 0; pointer-events: none; }
-.search-input {
-  position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 250px; opacity: 0;
-  transition: opacity 0.25s 0.12s;
-  pointer-events: none;
-}
-.search-bubble:hover .search-input { opacity: 1; pointer-events: auto; }
-.search-input :deep(.el-input__wrapper) { border-radius: 18px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-.search-input :deep(.el-input__inner) { color: rgba(255,255,255,0.85); }
-.search-input :deep(.el-input__inner::placeholder) { color: rgba(255,255,255,0.35); }
-
-.dark-toggle { background: transparent; border-color: rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); }
-.dark-toggle:hover { color: #ffab40; border-color: #ffab40; }
-
-
-=======
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 .header-right { display: flex; align-items: center; gap: 20px; }
 .notify-badge { cursor: pointer; }
 .notify-badge :deep(.el-badge__content) { border: none; }
@@ -564,17 +447,4 @@ function closeGuide() { showGuide.value = false; localStorage.setItem('medicare-
 .avatar-img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
 .user-name { font-size: 14px; color: #303133; }
 .content { background: transparent; overflow-y: auto; padding: 20px; }
-<<<<<<< HEAD
-
-/* 引导页 */
-.guide-steps { display: flex; flex-direction: column; gap: 20px; }
-.guide-step { display: flex; gap: 14px; align-items: flex-start; }
-.guide-num {
-  width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2);
-  color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;
-}
-.guide-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
-.guide-desc { font-size: 13px; color: #909399; }
-=======
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 </style>

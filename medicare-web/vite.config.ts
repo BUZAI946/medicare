@@ -5,10 +5,7 @@ import { viteMockServe } from 'vite-plugin-mock'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
-<<<<<<< HEAD
-=======
-    base: './', // 新增这一行
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
+    base: './',
     plugins: [
       vue(),
       viteMockServe({
@@ -26,8 +23,4 @@ export default defineConfig(({ mode }) => {
       },
     },
   }
-<<<<<<< HEAD
 })
-=======
-})
->>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
