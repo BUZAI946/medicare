@@ -5,7 +5,7 @@ import com.medicare.dto.DoctorVO;
 import com.medicare.dto.Result;
 import com.medicare.entity.Doctor;
 import com.medicare.service.DoctorService;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

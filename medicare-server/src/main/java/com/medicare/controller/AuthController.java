@@ -5,9 +5,9 @@ import com.medicare.dto.LoginRequest;
 import com.medicare.dto.Result;
 import com.medicare.entity.SysUser;
 import com.medicare.service.SysUserService;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

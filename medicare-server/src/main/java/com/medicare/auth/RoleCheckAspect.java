@@ -2,7 +2,7 @@ package com.medicare.auth;
 
 import com.medicare.entity.SysUser;
 import com.medicare.exception.BusinessException;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

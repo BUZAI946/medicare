@@ -4,7 +4,7 @@ import com.medicare.auth.RequireRole;
 import com.medicare.dto.Result;
 import com.medicare.entity.Patient;
 import com.medicare.service.PatientService;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

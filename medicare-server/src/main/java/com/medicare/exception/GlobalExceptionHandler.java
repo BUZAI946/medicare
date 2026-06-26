@@ -1,7 +1,7 @@
 package com.medicare.exception;
 
 import com.medicare.dto.Result;
-import javax.persistence.OptimisticLockException;
+import jakarta.persistence.OptimisticLockException;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
