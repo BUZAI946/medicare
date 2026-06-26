@@ -22,10 +22,13 @@
           <span class="time-stat-num">{{ stats.stockAlertCount }}</span>
           <span class="time-stat-label">库存预警</span>
         </div>
+<<<<<<< HEAD
         <div class="time-stat clickable" @click="$router.push('/payments')">
           <span class="time-stat-num">{{ stats.pendingPaymentCount || 0 }}</span>
           <span class="time-stat-label">待收费</span>
         </div>
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
         <el-tag type="success" size="small" effect="dark">● 运行中</el-tag>
       </div>
     </div>
@@ -63,7 +66,11 @@
         </div>
       </el-col>
       <el-col :span="6">
+<<<<<<< HEAD
         <div class="stat-card card-green" @click="$router.push('/reports')">
+=======
+        <div class="stat-card card-green" @click="$router.push('/medical-records')">
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
           <div class="card-icon"><el-icon :size="40"><TrendCharts /></el-icon></div>
           <div class="card-info">
             <div class="card-num">{{ completionRate }}%</div>
@@ -87,7 +94,11 @@
     </div>
 
     <!-- Ken Burns 图片横幅 -->
+<<<<<<< HEAD
     <div class="kenburns-wrap clickable" style="margin-top:16px" @click="$router.push('/calendar')">
+=======
+    <div class="kenburns-wrap clickable" style="margin-top:16px" @click="$router.push('/workstation')">
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
       <div class="kenburns-stage">
         <div class="kenburns-slide kb1"></div>
         <div class="kenburns-slide kb2"></div>
@@ -160,8 +171,13 @@
       <el-col :span="14">
         <el-card shadow="hover" class="quick-card">
           <template #header><span><el-icon><Star /></el-icon> 快捷操作</span></template>
+<<<<<<< HEAD
           <el-row :gutter="10">
             <el-col :span="4" v-for="q in quickActions" :key="q.path">
+=======
+          <el-row :gutter="12">
+            <el-col :span="6" v-for="q in quickActions" :key="q.path">
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
               <div class="quick-item" @click="$router.push(q.path)">
                 <el-icon :size="28" :color="q.color"><component :is="q.icon" /></el-icon>
                 <span>{{ q.label }}</span>
@@ -171,10 +187,17 @@
         </el-card>
       </el-col>
       <el-col :span="5">
+<<<<<<< HEAD
         <img :src="dashImgs[0]" class="hero-img clickable" alt="医院" @click="$router.push('/calendar')" />
       </el-col>
       <el-col :span="5">
         <img :src="dashImgs[1]" class="hero-img clickable" alt="医疗" @click="$router.push('/reports')" />
+=======
+        <img :src="dashImgs[0]" class="hero-img clickable" alt="医院" @click="$router.push('/patients')" />
+      </el-col>
+      <el-col :span="5">
+        <img :src="dashImgs[1]" class="hero-img clickable" alt="医疗" @click="$router.push('/basic-data')" />
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
       </el-col>
     </el-row>
   </div>
@@ -185,10 +208,17 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { getDashboardStats } from '../../api/user'
 import { listRegistrations } from '../../api/registration'
 import { dashImgs } from '../../utils/images'
+<<<<<<< HEAD
 
 const heroBannerImg = 'https://images.pexels.com/photos/3844581/pexels-photo-3844581.jpeg?auto=compress&cs=tinysrgb&w=1400&h=600&fit=crop&dpr=2'
 
 const stats = ref({ todayRegCount: 0, waitingCount: 0, stockAlertCount: 0, pendingPaymentCount: 0, todayPaymentAmount: '0' })
+=======
+
+const heroBannerImg = 'https://images.pexels.com/photos/3844581/pexels-photo-3844581.jpeg?auto=compress&cs=tinysrgb&w=1400&h=600&fit=crop&dpr=2'
+
+const stats = ref({ todayRegCount: 0, waitingCount: 0, stockAlertCount: 0 })
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 const regList = ref<any[]>([])
 
 // 实时时钟
@@ -260,7 +290,10 @@ const quickActions = [
   { path: '/workstation', label: '医生工作站', icon: 'Promotion', color: '#67c23a' },
   { path: '/pharmacy', label: '药品库存', icon: 'FirstAidKit', color: '#e6a23c' },
   { path: '/patients', label: '患者管理', icon: 'User', color: '#909399' },
+<<<<<<< HEAD
   { path: '/datav', label: '数据大屏', icon: 'Monitor', color: '#9b59b6' },
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 ]
 
 onMounted(async () => {
@@ -292,6 +325,7 @@ onUnmounted(() => clearInterval(timer))
 /* 统计卡片 */
 .stat-card {
   display: flex; align-items: center; gap: 16px;
+<<<<<<< HEAD
   padding: 24px; border-radius: 16px; color: #fff; cursor: pointer;
   position: relative; overflow: hidden;
   transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
@@ -313,6 +347,17 @@ onUnmounted(() => clearInterval(timer))
 .card-red { background: linear-gradient(135deg, #f87c7c, #e85656); }
 .card-green { background: linear-gradient(135deg, #78cc48, #5aaa38); }
 .card-icon { opacity: 0.25; }
+=======
+  padding: 24px; border-radius: 12px; color: #fff; cursor: pointer;
+  position: relative; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s;
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.15); }
+.card-blue { background: linear-gradient(135deg, #409eff, #337ecc); }
+.card-orange { background: linear-gradient(135deg, #e6a23c, #cf9236); }
+.card-red { background: linear-gradient(135deg, #f56c6c, #e04b4b); }
+.card-green { background: linear-gradient(135deg, #67c23a, #529b2e); }
+.card-icon { opacity: 0.3; }
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 .card-num { font-size: 32px; font-weight: bold; }
 .card-label { font-size: 13px; opacity: 0.85; margin-top: 4px; }
 .card-spark {

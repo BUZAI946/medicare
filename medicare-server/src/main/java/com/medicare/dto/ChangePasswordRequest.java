@@ -1,6 +1,6 @@
 package com.medicare.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**

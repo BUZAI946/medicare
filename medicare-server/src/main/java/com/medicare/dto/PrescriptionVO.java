@@ -28,12 +28,10 @@ public class PrescriptionVO {
 
     public static String getStatusText(Integer status) {
         if (status == null) return "未知";
-        return switch (status) {
-            case 0 -> "待缴费";
-            case 1 -> "已缴费";
-            case 2 -> "已取药";
-            case 3 -> "已作废";
-            default -> "未知";
-        };
+        if (status == 0) return "待缴费";
+        if (status == 1) return "已缴费";
+        if (status == 2) return "已取药";
+        if (status == 3) return "已作废";
+        return "未知";
     }
 }

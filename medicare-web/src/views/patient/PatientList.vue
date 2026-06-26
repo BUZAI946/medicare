@@ -29,11 +29,17 @@
         <el-table-column prop="name" label="姓名" width="110">
           <template #default="{ row }">
             <div class="patient-cell">
+<<<<<<< HEAD
               <PatientPopover :patient="row">
                 <el-avatar :size="32" :style="{background: row.gender===0?'#f56c6c':'#409eff'}">
                   {{ row.name?.charAt(0) }}
                 </el-avatar>
               </PatientPopover>
+=======
+              <el-avatar :size="32" :style="{background: row.gender===0?'#f56c6c':'#409eff'}">
+                {{ row.name?.charAt(0) }}
+              </el-avatar>
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
               <span class="patient-name">{{ row.name }}</span>
             </div>
           </template>
@@ -57,10 +63,16 @@
             <span v-else class="text-muted">无</span>
           </template>
         </el-table-column>
+<<<<<<< HEAD
         <el-table-column label="操作" width="190" fixed="right">
           <template #default="{ row }">
             <el-button text type="primary" size="small" @click="openDialog(row)"><el-icon><Edit /></el-icon></el-button>
             <el-button text type="success" size="small" @click="openTimeline(row)"><el-icon><Clock /></el-icon></el-button>
+=======
+        <el-table-column label="操作" width="150" fixed="right">
+          <template #default="{ row }">
+            <el-button text type="primary" size="small" @click="openDialog(row)"><el-icon><Edit /></el-icon></el-button>
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
             <el-popconfirm title="确定删除该患者?" @confirm="handleDelete(row.id)">
               <template #reference><el-button text type="danger" size="small"><el-icon><Delete /></el-icon></el-button></template>
             </el-popconfirm>
@@ -91,6 +103,7 @@
         <el-form-item label="过敏史"><el-input v-model="form.allergyInfo" type="textarea" :rows="2" placeholder="如：青霉素过敏" /></el-form-item>
       </el-form>
       <template #footer><el-button @click="dialogVisible=false">取消</el-button><el-button type="primary" @click="handleSave">保存</el-button></template>
+<<<<<<< HEAD
     </el-dialog>
 
     <!-- 时间线弹窗 -->
@@ -107,13 +120,18 @@
         </div>
       </div>
       <el-empty v-else description="暂无就诊记录" :image-size="60" />
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+<<<<<<< HEAD
 import { useRoute } from 'vue-router'
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { listPatients, searchPatients, createPatient, updatePatient, deletePatient } from '../../api/patient'
@@ -208,6 +226,7 @@ onMounted(loadData)
 .patient-name { font-weight: 500; }
 .text-muted { color: #c0c4cc; }
 .table-footer-bar { display: flex; justify-content: space-between; padding: 10px 0 0; font-size: 13px; color: #606266; }
+<<<<<<< HEAD
 
 /* 时间线 */
 .timeline { position: relative; padding-left: 24px; }
@@ -218,4 +237,6 @@ onMounted(loadData)
 .tl-date { font-size: 11px; color: #c0c4cc; margin-bottom: 2px; }
 .tl-title { font-weight: 600; font-size: 14px; }
 .tl-desc { font-size: 12px; color: #909399; margin-top: 2px; }
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 </style>

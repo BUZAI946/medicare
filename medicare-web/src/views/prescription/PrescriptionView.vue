@@ -66,6 +66,7 @@
 
             <!-- 新开处方 -->
             <div v-if="!existingPrescription" class="presc-form">
+<<<<<<< HEAD
               <!-- 智能推荐 -->
               <div class="ai-recommend">
                 <div class="ai-recommend-title">
@@ -118,6 +119,23 @@
                 <el-input v-model="itemUsage" size="small" style="width:130px" placeholder="用法用量" />
                 <el-button type="primary" size="small" @click="addItem"><el-icon><Plus /></el-icon></el-button>
               </div>
+=======
+              <div class="med-selector">
+                <el-input v-model="medKw" placeholder="搜索药品" size="small" style="width:150px" @keyup.enter="searchMeds"><template #prefix><el-icon><Search /></el-icon></template></el-input>
+                <el-select v-model="selectedMedId" placeholder="💊 选择药品" size="small" style="width:240px" filterable>
+                  <el-option v-for="m in medResults" :key="m.id" :label="`${m.name} (${m.spec})`" :value="m.id">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <span>{{ m.name }} <small style="color:#909399">{{ m.spec }}</small></span>
+                      <span style="color:#f56c6c;font-weight:bold">¥{{ (m.price||0).toFixed(2) }}</span>
+                    </div>
+                    <small style="color:#909399">库存: {{ m.stock }} | 单位: {{ m.unit }}</small>
+                  </el-option>
+                </el-select>
+                <el-input-number v-model="itemQty" :min="1" size="small" style="width:80px" placeholder="数量" />
+                <el-input v-model="itemUsage" size="small" style="width:130px" placeholder="用法用量" />
+                <el-button type="primary" size="small" @click="addItem"><el-icon><Plus /></el-icon></el-button>
+              </div>
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
               <el-table :data="items" stripe border size="small" class="item-table">
                 <el-table-column prop="medicineName" label="药品" />
                 <el-table-column prop="medicineSpec" label="规格" width="100" />
@@ -129,9 +147,12 @@
               </el-table>
               <div class="presc-footer">
                 <div class="total-amount">💰 合计：<b>¥{{ totalAmount.toFixed(2) }}</b></div>
+<<<<<<< HEAD
                 <el-button :disabled="items.length===0" @click="saveTemplate" size="large">
                   <el-icon><FolderAdd /></el-icon> 保存模板
                 </el-button>
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
                 <el-button type="primary" :disabled="items.length===0" @click="savePrescription" size="large">
                   <el-icon><DocumentAdd /></el-icon> 开立处方
                 </el-button>
@@ -172,7 +193,11 @@ import { ElMessage } from 'element-plus'
 import { listRegistrations } from '../../api/registration'
 import { listMedicines } from '../../api/medicine'
 import { listPrescriptions, getByRecord, createPrescription, dispensePrescription, cancelPrescription } from '../../api/prescription'
+<<<<<<< HEAD
 import { listMedicalRecords, createMedicalRecord } from '../../api/medical-record'
+=======
+import { listMedicalRecords } from '../../api/medical-record'
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 import { prescImgs } from '../../utils/images'
 import type { Registration, Medicine, Prescription, PrescriptionItem } from '../../types'
 
@@ -202,6 +227,7 @@ const medKw = ref(''), medResults = ref<Medicine[]>([]), selectedMedId = ref<num
 const itemQty = ref(1), itemUsage = ref('遵医嘱')
 const items = ref<PrescriptionItem[]>([])
 
+<<<<<<< HEAD
 // AI推荐
 const diagnosisKw = ref('')
 const recommendList = ref<{ diagnosis: string; medicines: string[] }[]>([])
@@ -351,6 +377,48 @@ async function savePrescription(){
 async function handleDispense(){if(!existingPrescription.value)return;try{await dispensePrescription(existingPrescription.value.id!);ElMessage.success('取药成功');if(selectedReg.value)handleSelectPatient(selectedReg.value)}catch{}}
 async function handleCancel(){if(!existingPrescription.value)return;try{await cancelPrescription(existingPrescription.value.id!);ElMessage.success('已作废');if(selectedReg.value)handleSelectPatient(selectedReg.value)}catch{}}
 onMounted(()=>{loadRegs();loadTemplates()})
+=======
+const prescText = (s:number)=>['待缴费','已缴费','已取药','已作废'][s]||'?'
+const prescTag = (s:number)=>(['warning','','success','info'] as const)[s]||''
+const totalAmount = computed(()=>items.value.reduce((s,i)=>s+(i.amount||0),0))
+
+async function loadRegs(){try{const r=await listRegistrations();completedRegs.value=(r.data as Registration[]).filter(reg=>reg.status===2)}catch{}}
+async function handleSelectPatient(row:Registration){
+  selectedReg.value=row;items.value=[];existingPrescription.value=prescMap[row.id]||null
+  // 预加载全部药品
+  try{const r=await listMedicines('');medResults.value=r.data}catch{}
+  try{const recs=await listMedicalRecords(row.patientId,row.id);const rec=(recs.data as any[])[0]
+    if(rec){const pr=await getByRecord(rec.id);existingPrescription.value=pr.data;if(pr.data)prescMap[row.id]=pr.data}
+  }catch{}
+}
+async function searchMeds(){
+  if(!medKw.value.trim()){try{const r=await listMedicines('');medResults.value=r.data}catch{};return}
+  try{const r=await listMedicines(medKw.value);medResults.value=r.data}catch{}
+}
+async function addItem(){
+  const med=medResults.value.find(m=>m.id===selectedMedId.value)
+  if(!med){ElMessage.warning('请选择药品');return}
+  if(items.value.find(i=>i.medicineId===med.id)){ElMessage.warning('该药品已添加');return}
+  const price=Number(med.price)||0
+  const qty=itemQty.value
+  items.value.push({medicineId:med.id!,quantity:qty,usageDesc:itemUsage.value||'遵医嘱',unitPrice:price,amount:price*qty,medicineName:med.name,medicineSpec:med.spec,medicineUnit:med.unit})
+  ElMessage.success(`已添加：${med.name} x${qty} = ¥${(price*qty).toFixed(2)}`)
+  medKw.value='';selectedMedId.value=undefined;itemQty.value=1;itemUsage.value='遵医嘱'
+  // 重新搜索所有药品保持列表
+  try{const r=await listMedicines('');medResults.value=r.data}catch{}
+}
+async function savePrescription(){
+  if(!selectedReg.value||items.value.length===0)return
+  try{const recs=await listMedicalRecords(selectedReg.value.patientId,selectedReg.value.id);const rec=(recs.data as any[])[0]
+    if(!rec){ElMessage.error('未找到病历');return}
+    await createPrescription({prescription:{recordId:rec.id,patientId:selectedReg.value.patientId,doctorId:selectedReg.value.doctorId||selectedReg.value.doctorId!,status:0},items:items.value})
+    ElMessage.success('处方开立成功');items.value=[];handleSelectPatient(selectedReg.value)
+  }catch{}
+}
+async function handleDispense(){if(!existingPrescription.value)return;try{await dispensePrescription(existingPrescription.value.id!);ElMessage.success('取药成功');if(selectedReg.value)handleSelectPatient(selectedReg.value)}catch{}}
+async function handleCancel(){if(!existingPrescription.value)return;try{await cancelPrescription(existingPrescription.value.id!);ElMessage.success('已作废');if(selectedReg.value)handleSelectPatient(selectedReg.value)}catch{}}
+onMounted(loadRegs)
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 </script>
 
 <style scoped>
@@ -384,6 +452,7 @@ onMounted(()=>{loadRegs();loadTemplates()})
 }
 .med-selector { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
 .item-table { border-radius: 8px; margin-bottom: 14px; }
+<<<<<<< HEAD
 .presc-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 8px; gap: 8px; }
 
 /* 模板 */
@@ -421,6 +490,9 @@ onMounted(()=>{loadRegs();loadTemplates()})
   font-size: 12px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
 }
 .recommend-chip:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(102,126,234,0.3); }
+=======
+.presc-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 8px; }
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 .total-amount { font-size: 18px; }
 .total-amount b { color: #f56c6c; }
 .presc-actions { display: flex; gap: 8px; }

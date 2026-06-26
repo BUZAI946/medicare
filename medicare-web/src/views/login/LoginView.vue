@@ -18,11 +18,16 @@
 
       <!-- 左侧品牌 -->
       <div class="login-brand">
+<<<<<<< HEAD
         <div class="fly-in-l" style="--d:0.75s">
+=======
+        <div class="fly-btl" style="--delay:0.72s">
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
           <div class="brand-icon">
             <el-icon :size="64"><FirstAidKit /></el-icon>
           </div>
         </div>
+<<<<<<< HEAD
         <h1 class="brand-title fly-in-l" style="--d:0.79s">MediCare</h1>
         <p class="brand-sub fly-in-l" style="--d:0.82s">智慧医疗门诊管理系统</p>
         <div class="brand-features">
@@ -35,6 +40,20 @@
             <span>电子病历 · 诊疗记录</span>
           </div>
           <div class="feature-item fly-in-bl" style="--d:0.91s">
+=======
+        <h1 class="brand-title fly-btl" style="--delay:0.78s">MediCare</h1>
+        <p class="brand-sub fly-btl" style="--delay:0.84s">智慧医疗门诊管理系统</p>
+        <div class="brand-features">
+          <div class="feature-item fly-btr" style="--delay:0.90s">
+            <el-icon :size="18"><Calendar /></el-icon>
+            <span>预约挂号 · 在线分诊</span>
+          </div>
+          <div class="feature-item fly-btr" style="--delay:0.96s">
+            <el-icon :size="18"><Document /></el-icon>
+            <span>电子病历 · 诊疗记录</span>
+          </div>
+          <div class="feature-item fly-btr" style="--delay:1.02s">
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
             <el-icon :size="18"><FirstAidKit /></el-icon>
             <span>药房管理 · 处方开立</span>
           </div>
@@ -44,6 +63,7 @@
       <!-- 右侧登录表单 -->
       <div class="login-form-wrap">
         <div class="form-header">
+<<<<<<< HEAD
           <h2 class="shimmer-title fly-in-r" style="--d:0.77s">欢迎回来</h2>
           <p class="shimmer-text fly-in-r" style="--d:0.80s">请登录您的账号</p>
         </div>
@@ -52,6 +72,13 @@
           <input type="text" style="display:none" autocomplete="off" />
           <input type="password" style="display:none" autocomplete="off" />
           <div class="fly-in-br" style="--d:0.83s">
+=======
+          <h2 class="shimmer-title fly-ftr" style="--delay:0.78s">欢迎回来</h2>
+          <p class="shimmer-text fly-ftr" style="--delay:0.84s">请登录您的账号</p>
+        </div>
+        <el-form ref="formRef" :model="form" :rules="rules" label-width="0" class="login-form" @submit.prevent="handleLogin">
+          <div class="fly-ftr" style="--delay:0.90s">
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
             <el-form-item prop="username" class="input-wrapper">
               <div class="liquid-input" :class="{ focused: usernameFocused, filled: form.username }">
                 <div class="liquid-glow"></div>
@@ -60,7 +87,10 @@
                   placeholder="请输入用户名"
                   size="large"
                   :prefix-icon="User"
+<<<<<<< HEAD
                   autocomplete="off"
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
                   class="custom-input"
                   @focus="usernameFocused = true"
                   @blur="usernameFocused = false"
@@ -74,7 +104,11 @@
             </el-form-item>
           </div>
 
+<<<<<<< HEAD
           <div class="fly-in-br" style="--d:0.87s">
+=======
+          <div class="fly-ftr" style="--delay:0.96s">
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
             <el-form-item prop="password" class="input-wrapper">
               <div class="liquid-input" :class="{ focused: passwordFocused, filled: form.password }">
                 <div class="liquid-glow"></div>
@@ -84,7 +118,10 @@
                   placeholder="请输入密码"
                   size="large"
                   :prefix-icon="Lock"
+<<<<<<< HEAD
                   autocomplete="new-password"
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
                   show-password
                   class="custom-input"
                   @focus="passwordFocused = true"
@@ -100,7 +137,11 @@
             </el-form-item>
           </div>
 
+<<<<<<< HEAD
           <div class="fly-in-br" style="--d:0.91s">
+=======
+          <div class="fly-fbr" style="--delay:1.02s">
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
             <el-form-item>
               <el-button type="primary" size="large" :loading="loading" class="login-btn" @click="handleLogin">
                 登 录
@@ -196,6 +237,7 @@ function validateField(field: string) {
     else if (form.password.length < 3) { passwordError.value = '密码至少3位'; passwordValid.value = false }
     else { passwordError.value = ''; passwordValid.value = true }
   }
+<<<<<<< HEAD
 }
 
 const welcomeVisible = ref(false)
@@ -207,6 +249,8 @@ function sparkStyle(i: number) {
     '--angle': angle + 'deg',
     animationDelay: (i * 0.06) + 's',
   }
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 }
 
 async function handleLogin() {
@@ -215,6 +259,7 @@ async function handleLogin() {
   loading.value = true
   try {
     const res = await login(form)
+<<<<<<< HEAD
     const user = res.data
     userStore.setUser(user)
     welcomeName.value = user.realName || user.username || '用户'
@@ -228,6 +273,14 @@ async function handleLogin() {
     ElMessage.error(e?.message || e?.response?.data?.message || '用户名或密码错误')
     loading.value = false
   }
+=======
+    userStore.setUser(res.data)
+    ElMessage.success('登录成功')
+    router.push('/')
+  } catch (e: any) {
+    ElMessage.error(e?.message || e?.response?.data?.message || '用户名或密码错误')
+  } finally { loading.value = false }
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 }
 </script>
 
@@ -277,6 +330,7 @@ async function handleLogin() {
   border: 1px solid rgba(255,255,255,0.12);
 }
 
+<<<<<<< HEAD
 /* ===== 卡片碎片汇聚 + 内容归位 ===== */
 
 /* 卡片本体 — 碎片拼合时同步浮现 */
@@ -296,25 +350,47 @@ async function handleLogin() {
   backdrop-filter: blur(12px);
   border: 1.5px solid rgba(255,255,255,0.2);
   animation: pieceGather 1.2s cubic-bezier(0.25,0.46,0.45,0.94) both;
+=======
+/* ===== 四块碎片飞入 ===== */
+.card-piece {
+  position: absolute; z-index: 10; pointer-events: none;
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.12);
+  animation: pieceFlyIn 1.2s cubic-bezier(0.22,0.95,0.34,1.05) both;
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 }
 .piece-tl {
   top: 0; left: 0; width: 50%; height: 50%;
   border-radius: 24px 0 0 0; border-right: none; border-bottom: none;
+<<<<<<< HEAD
   --px: -25vw; --py: -20vh; animation-delay: 0s;
+=======
+  --px: -60vw; --py: -60vh; animation-delay: 0s;
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 }
 .piece-tr {
   top: 0; right: 0; width: 50%; height: 50%;
   border-radius: 0 24px 0 0; border-left: none; border-bottom: none;
+<<<<<<< HEAD
   --px: 25vw; --py: -20vh; animation-delay: 0.06s;
+=======
+  --px: 60vw; --py: -60vh; animation-delay: 0.05s;
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 }
 .piece-bl {
   bottom: 0; left: 0; width: 50%; height: 50%;
   border-radius: 0 0 0 24px; border-right: none; border-top: none;
+<<<<<<< HEAD
   --px: -25vw; --py: 20vh; animation-delay: 0.12s;
+=======
+  --px: -60vw; --py: 60vh; animation-delay: 0.1s;
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 }
 .piece-br {
   bottom: 0; right: 0; width: 50%; height: 50%;
   border-radius: 0 0 24px 0; border-left: none; border-top: none;
+<<<<<<< HEAD
   --px: 25vw; --py: 20vh; animation-delay: 0.18s;
 }
 @keyframes pieceGather {
@@ -329,10 +405,27 @@ async function handleLogin() {
   animation: contentFade 0.5s 0.7s ease-out both;
 }
 @keyframes contentFade {
+=======
+  --px: 60vw; --py: 60vh; animation-delay: 0.15s;
+}
+@keyframes pieceFlyIn {
+  0%   { transform: translate3d(var(--px), var(--py), 0) scale(0.3); opacity: 0; }
+  30%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
+}
+
+/* 卡片内容在碎片快到位时渐显 */
+.login-brand, .login-form-wrap {
+  animation: contentReveal 0.6s 0.7s ease-out both;
+}
+@keyframes contentReveal {
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
   0% { opacity: 0; }
   100% { opacity: 1; }
 }
 
+<<<<<<< HEAD
 /* 元素归位 — 从屏幕四角飞来，弹簧落地 */
 .fly-in-l  { --sx: -18vw; --sy: -14vh; }
 .fly-in-r  { --sx: 18vw;  --sy: -14vh; }
@@ -346,6 +439,8 @@ async function handleLogin() {
   100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
 
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 /* ===== 左侧品牌 ===== */
 .login-brand {
   width: 400px; padding: 60px 40px; color: #fff; text-align: center;
@@ -372,11 +467,18 @@ async function handleLogin() {
   background-size: 250% 100%;
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
+<<<<<<< HEAD
   animation: shimmerFlow 4s linear infinite;
   filter: drop-shadow(0 0 12px rgba(196,181,253,0.5)) drop-shadow(0 0 30px rgba(168,85,247,0.3));
 }
 .brand-title.fly-in-l {
   animation: shimmerFlow 4s linear infinite, elementLand 0.9s var(--d, 0s) cubic-bezier(0.34,1.56,0.64,1) both;
+=======
+  filter: drop-shadow(0 0 12px rgba(196,181,253,0.5)) drop-shadow(0 0 30px rgba(168,85,247,0.3));
+}
+.brand-title.fly-btl {
+  animation: shimmerFlow 4s linear infinite, convergeIn 1.4s var(--delay, 0s) cubic-bezier(0.22,0.95,0.34,1.05) both, blurClear 1.4s var(--delay, 0s) ease-out both;
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 }
 .brand-sub {
   font-size: 16px; opacity: 0.85; margin: 0 0 30px;
@@ -385,8 +487,13 @@ async function handleLogin() {
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+<<<<<<< HEAD
 .brand-sub.fly-in-l {
   animation: shimmerFlow 3.5s linear infinite, elementLand 0.9s var(--d, 0s) cubic-bezier(0.34,1.56,0.64,1) both;
+=======
+.brand-sub.fly-btl {
+  animation: shimmerFlow 3.5s linear infinite, convergeIn 1.4s var(--delay, 0s) cubic-bezier(0.22,0.95,0.34,1.05) both, blurClear 1.4s var(--delay, 0s) ease-out both;
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 }
 .brand-features { width: 100%; }
 .feature-item {
@@ -420,8 +527,13 @@ async function handleLogin() {
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 0 12px rgba(196,181,253,0.5)) drop-shadow(0 0 30px rgba(168,85,247,0.3));
 }
+<<<<<<< HEAD
 .shimmer-title.fly-in-r {
   animation: shimmerFlow 4s linear infinite, elementLand 0.9s var(--d, 0s) cubic-bezier(0.34,1.56,0.64,1) both;
+=======
+.shimmer-title.fly-ftr {
+  animation: shimmerFlow 4s linear infinite, convergeIn 1.0s var(--delay, 0s) cubic-bezier(0.22,0.95,0.34,1.05) both, blurClear 1.0s var(--delay, 0s) ease-out both;
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 }
 
 /* 副标题流光 */
@@ -434,8 +546,13 @@ async function handleLogin() {
   display: inline-block;
   filter: drop-shadow(0 0 10px rgba(165,180,252,0.4)) drop-shadow(0 0 25px rgba(196,181,253,0.25));
 }
+<<<<<<< HEAD
 .shimmer-text.fly-in-r {
   animation: shimmerFlow 3.5s linear infinite, elementLand 0.9s var(--d, 0s) cubic-bezier(0.34,1.56,0.64,1) both;
+=======
+.shimmer-text.fly-ftr {
+  animation: shimmerFlow 3.5s linear infinite, convergeIn 1.0s var(--delay, 0s) cubic-bezier(0.22,0.95,0.34,1.05) both, blurClear 1.0s var(--delay, 0s) ease-out both;
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 }
 
 @keyframes shimmerFlow {
@@ -444,6 +561,34 @@ async function handleLogin() {
   100% { background-position: 0% 50%; }
 }
 
+<<<<<<< HEAD
+=======
+/* ===== 四面飞入动画（比碎片慢，碎片到位后再飞） ===== */
+.fly-btl, .fly-btr, .fly-ftr, .fly-fbr {
+  animation:
+    convergeIn 1.4s var(--delay, 0s) cubic-bezier(0.22,0.95,0.34,1.05) both,
+    blurClear 1.4s var(--delay, 0s) ease-out both;
+}
+
+/* 来自左上（屏幕左上方飞入） */
+.fly-btl  { --dx: -50vw; --dy: -50vh; }
+/* 来自右下（屏幕右下方飞入） */
+.fly-btr  { --dx: 50vw; --dy: 50vh; }
+/* 来自右上（屏幕右上方飞入） */
+.fly-ftr  { --dx: 50vw; --dy: -50vh; }
+/* 来自左下（屏幕左下方飞入） */
+.fly-fbr  { --dx: -50vw; --dy: 50vh; }
+
+@keyframes convergeIn {
+  0%   { transform: translate3d(var(--dx, 60px), var(--dy, 50px), 0) scale(0.7); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes blurClear {
+  0%   { opacity: 0; filter: blur(12px); }
+  100% { opacity: 1; filter: blur(0); }
+}
+
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 /* 输入框 */
 .liquid-input { position: relative; border-radius: 12px; transition: all 0.4s ease; }
 .liquid-input .liquid-glow {
@@ -484,6 +629,7 @@ async function handleLogin() {
   transition: transform 0.2s, box-shadow 0.3s;
 }
 .login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102,126,234,0.35); }
+<<<<<<< HEAD
 
 /* ===== 欢迎画面 ===== */
 .welcome-overlay {
@@ -555,4 +701,6 @@ async function handleLogin() {
 .welcome-enter-active { transition: opacity 0.3s; }
 .welcome-leave-active { transition: opacity 0.5s; }
 .welcome-enter-from, .welcome-leave-to { opacity: 0; }
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 </style>

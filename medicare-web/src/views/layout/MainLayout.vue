@@ -75,6 +75,7 @@
           <span class="bubble b3"></span>
         </div>
 
+<<<<<<< HEAD
         <!-- 搜索 + 暗色模式 -->
         <div class="header-center">
           <div class="search-bubble">
@@ -88,6 +89,66 @@
           <el-button circle size="small" class="dark-toggle" @click="toggleDarkMode" :title="isDark ? '切换亮色' : '切换暗色'">
             <el-icon :size="16"><component :is="isDark ? 'Sunny' : 'Moon'" /></el-icon>
           </el-button>
+=======
+        <div class="header-right">
+          <!-- 通知中心 -->
+          <el-popover placement="bottom" :width="360" trigger="click">
+            <template #reference>
+              <el-badge :value="unreadCount" :hidden="unreadCount===0" class="notify-badge">
+                <el-button circle>
+                  <el-icon :size="18"><Bell /></el-icon>
+                </el-button>
+              </el-badge>
+            </template>
+            <div class="notify-panel">
+              <div class="notify-panel-header">
+                <b>消息通知</b>
+                <el-button text size="small" type="primary" @click="markAllRead">全部已读</el-button>
+              </div>
+              <div class="notify-list">
+                <div v-for="n in notifications" :key="n.id" class="notify-item" :class="{ unread: !n.read }" @click="readNotify(n)">
+                  <div class="notify-icon" :style="{ background: n.color }">
+                    <el-icon :size="16"><component :is="n.icon" /></el-icon>
+                  </div>
+                  <div class="notify-body">
+                    <div class="notify-title">{{ n.title }}</div>
+                    <div class="notify-desc">{{ n.desc }}</div>
+                    <div class="notify-time">{{ n.time }}</div>
+                  </div>
+                  <div v-if="!n.read" class="notify-dot"></div>
+                </div>
+              </div>
+            </div>
+          </el-popover>
+
+          <!-- 用户下拉 -->
+          <el-dropdown trigger="click">
+            <div class="user-avatar">
+              <img :src="userAvatar" class="avatar-img" />
+              <span class="user-name">{{ userStore.currentUser?.realName || '未登录' }}</span>
+              <el-icon><ArrowDown /></el-icon>
+            </div>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item disabled>
+                  <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+                    <img :src="userAvatar" style="width:36px;height:36px;border-radius:50%" />
+                    <div>
+                      <div style="font-weight:bold">{{ userStore.currentUser?.realName }}</div>
+                      <div style="font-size:12px;color:#909399">{{ roleText }}</div>
+                    </div>
+                  </div>
+                </el-dropdown-item>
+                <el-dropdown-item divided @click="$router.push('/settings')">
+                  <el-icon><Setting /></el-icon> 系统设置
+                </el-dropdown-item>
+                <el-dropdown-item @click="handleLogout">
+                  <el-icon><SwitchButton /></el-icon> 退出登录
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
         </div>
 
         <div class="header-right">
@@ -175,11 +236,16 @@
 </template>
 
 <script setup lang="ts">
+<<<<<<< HEAD
 import { ref, computed, reactive, watch } from 'vue'
+=======
+import { ref, computed, reactive } from 'vue'
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../../stores/user'
 import { avatarUrl } from '../../utils/avatar'
+<<<<<<< HEAD
 
 // 全局搜索
 const globalKw = ref('')
@@ -201,6 +267,8 @@ function applyDarkMode() {
   document.documentElement.classList.toggle('dark-mode', isDark.value)
 }
 applyDarkMode()
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 
 const route = useRoute()
 const router = useRouter()
@@ -299,7 +367,11 @@ function closeGuide() { showGuide.value = false; localStorage.setItem('medicare-
 .header {
   display: flex; align-items: center; justify-content: space-between;
   background: rgba(26,26,46,0.55); backdrop-filter: blur(16px);
+<<<<<<< HEAD
   padding: 0 20px; height: 56px; z-index: 10; position: relative;
+=======
+  padding: 0 20px; height: 56px; z-index: 10;
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
   border-bottom: 1px solid rgba(255,255,255,0.1);
   position: relative; overflow: hidden;
 }
@@ -308,6 +380,7 @@ function closeGuide() { showGuide.value = false; localStorage.setItem('medicare-
 .header .el-breadcrumb :deep(.el-breadcrumb__inner) { color: rgba(255,255,255,0.7); }
 .header .el-breadcrumb :deep(.el-breadcrumb__inner:hover) { color: #fff; }
 .user-name { color: rgba(255,255,255,0.85) !important; }
+<<<<<<< HEAD
 .header-left { display: flex; align-items: center; gap: 16px; position: relative; z-index: 3; }
 .collapse-btn { cursor: pointer; color: rgba(255,255,255,0.7) !important; transition: color 0.3s; }
 .collapse-btn:hover { color: #fff !important; }
@@ -316,6 +389,14 @@ function closeGuide() { showGuide.value = false; localStorage.setItem('medicare-
 
 /* 小海豚 */
 .dolphin-area { position: absolute; top: 0; left: 0; right: 0; height: 100%; pointer-events: none; z-index: 1; overflow: hidden; }
+=======
+.header-left { display: flex; align-items: center; gap: 16px; }
+.collapse-btn { cursor: pointer; color: #606266; transition: color 0.3s; }
+.collapse-btn:hover { color: #409eff; }
+
+/* 小海豚 */
+.dolphin-area { flex: 1; height: 100%; position: relative; overflow: hidden; }
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 
 /* 外层：匀速水平游动 + 转身 */
 .dolphin-wrap {
@@ -401,6 +482,7 @@ function closeGuide() { showGuide.value = false; localStorage.setItem('medicare-
   100% { opacity: 0; transform: translate(5px, -26px) scale(1.1); }
 }
 
+<<<<<<< HEAD
 .header-center { display: flex; align-items: center; gap: 10px; flex: 0.8; justify-content: center; position: relative; z-index: 5; }
 /* 搜索 — 玻璃圆圈悬停展开 */
 .search-bubble {
@@ -456,6 +538,8 @@ function closeGuide() { showGuide.value = false; localStorage.setItem('medicare-
 .dark-toggle:hover { color: #ffab40; border-color: #ffab40; }
 
 
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 .header-right { display: flex; align-items: center; gap: 20px; }
 .notify-badge { cursor: pointer; }
 .notify-badge :deep(.el-badge__content) { border: none; }
@@ -480,6 +564,7 @@ function closeGuide() { showGuide.value = false; localStorage.setItem('medicare-
 .avatar-img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
 .user-name { font-size: 14px; color: #303133; }
 .content { background: transparent; overflow-y: auto; padding: 20px; }
+<<<<<<< HEAD
 
 /* 引导页 */
 .guide-steps { display: flex; flex-direction: column; gap: 20px; }
@@ -490,4 +575,6 @@ function closeGuide() { showGuide.value = false; localStorage.setItem('medicare-
 }
 .guide-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
 .guide-desc { font-size: 13px; color: #909399; }
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 </style>

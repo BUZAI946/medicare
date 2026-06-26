@@ -1,6 +1,6 @@
 package com.medicare.entity;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -53,12 +53,10 @@ public class Registration {
 
     public static String getStatusText(Integer status) {
         if (status == null) return "未知";
-        return switch (status) {
-            case STATUS_WAITING -> "候诊";
-            case STATUS_IN_PROGRESS -> "就诊中";
-            case STATUS_COMPLETED -> "已完成";
-            case STATUS_CANCELLED -> "已取消";
-            default -> "未知";
-        };
+        if (status == STATUS_WAITING) return "候诊";
+        if (status == STATUS_IN_PROGRESS) return "就诊中";
+        if (status == STATUS_COMPLETED) return "已完成";
+        if (status == STATUS_CANCELLED) return "已取消";
+        return "未知";
     }
 }

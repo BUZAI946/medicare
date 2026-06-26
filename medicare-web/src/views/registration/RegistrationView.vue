@@ -32,6 +32,7 @@
           <template #header>
             <div class="card-head">
               <span>📋 可用号源</span>
+<<<<<<< HEAD
               <div style="display:flex;gap:8px;align-items:center">
                 <el-button size="small" type="success" @click="generateSchedules" :loading="genLoading">⚡ 一键生成排班</el-button>
                 <el-date-picker v-model="queryDate" type="date" value-format="YYYY-MM-DD" size="small" @change="loadSchedules" />
@@ -40,6 +41,15 @@
                   <el-option label="下午" value="下午" />
                 </el-select>
                 <el-select v-model="queryDeptId" placeholder="科室" clearable size="small" style="width:100px" @change="loadSchedules">
+=======
+              <div style="display:flex;gap:8px">
+                <el-date-picker v-model="queryDate" type="date" value-format="YYYY-MM-DD" size="small" @change="loadSchedules" />
+                <el-select v-model="querySlot" placeholder="时段" clearable size="small" style="width:130px" @change="loadSchedules">
+                  <el-option label="上午" value="上午" />
+                  <el-option label="下午" value="下午" />
+                </el-select>
+                <el-select v-model="queryDeptId" placeholder="科室" clearable size="small" style="width:130px" @change="loadSchedules">
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
                   <el-option v-for="d in deptList" :key="d.id" :label="d.name" :value="d.id" />
                 </el-select>
               </div>
@@ -112,7 +122,10 @@ import { listDepartments } from '../../api/department'
 import { getAvailableSchedules, createSchedule } from '../../api/schedule'
 import { listRegistrations, register, cancelRegistration } from '../../api/registration'
 import { listPatients, searchPatients } from '../../api/patient'
+<<<<<<< HEAD
 import { listDoctors } from '../../api/doctor'
+=======
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 import { regImgs } from '../../utils/images'
 import type { Department, Schedule, Registration, Patient } from '../../types'
 
@@ -127,6 +140,7 @@ const regDialogVisible = ref(false)
 const patientKw = ref('')
 const patientList = ref<Patient[]>([])
 const selectedPatient = ref<Patient|null>(null)
+<<<<<<< HEAD
 const genLoading = ref(false)
 
 async function generateSchedules() {
@@ -213,6 +227,57 @@ onMounted(async()=>{await listDepartments().then(r=>deptList.value=r.data);loadS
   display: flex; align-items: center; gap: 10px; padding: 10px; margin-bottom: 6px;
   border-radius: 8px; background: #fafafa; transition: background 0.2s;
 }
+=======
+
+async function loadSchedules(){try{const r=await getAvailableSchedules(queryDate.value,queryDeptId.value);let list=r.data||[];if(querySlot.value)list=list.filter((s:any)=>s.timeSlot?.includes(querySlot.value));schedList.value=list}catch{}}
+async function loadRegs(){try{const r=await listRegistrations(queryDate.value);regList.value=r.data}catch{}}
+function handleSelectSchedule(row:Schedule){selectedSchedule.value=row}
+async function openRegDialog(){regDialogVisible.value=true;patientKw.value='';selectedPatient.value=null;try{const r=await listPatients();patientList.value=r.data}catch{}}
+async function handleSearchPatients(){try{if(!patientKw.value.trim()){const r=await listPatients();patientList.value=r.data}else{const r=await searchPatients(patientKw.value.trim());patientList.value=r.data}}catch{}}
+function handleSelectPatient(row:Patient){selectedPatient.value=row}
+async function handleRegister(){if(!selectedSchedule.value||!selectedPatient.value)return;try{await register({patientId:selectedPatient.value.id!,scheduleId:selectedSchedule.value.id!});ElMessage.success('挂号成功');regDialogVisible.value=false;loadSchedules();loadRegs()}catch{}}
+async function handleCancel(id:number){try{await cancelRegistration(id);ElMessage.success('已取消');loadRegs();loadSchedules()}catch{}}
+onMounted(async()=>{await listDepartments().then(r=>deptList.value=r.data);loadSchedules();loadRegs()})
+</script>
+
+<style scoped>
+.reg-view { padding: 0; }
+.page-hero {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 24px; margin-bottom: 16px;
+  background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 14px; color: #fff;
+}
+.page-hero h2 { margin: 0 0 4px; font-size: 20px; }
+.page-hero p { margin: 0; opacity: 0.85; font-size: 13px; }
+.hero-left { display: flex; align-items: center; gap: 14px; }
+.hero-badge { display: flex; gap: 10px; font-size: 13px; }
+.hero-stat { padding: 4px 14px; border-radius: 8px; background: rgba(255,255,255,0.15); }
+.hero-stat b { font-size: 18px; }
+.main-card { border-radius: 12px; height: calc(100vh - 160px); overflow-y: auto; }
+.card-head { display: flex; justify-content: space-between; align-items: center; }
+
+/* 号源网格 */
+.sched-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sched-item {
+  padding: 12px; border-radius: 10px; border: 2px solid #eee; cursor: pointer;
+  transition: all 0.3s;
+}
+.sched-item:hover, .sched-item.selected { border-color: #e6a23c; background: #fef8f0; }
+.sched-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.sched-doc { font-weight: 600; }
+.sched-dept { font-size: 12px; color: #909399; }
+.sched-body { display: flex; justify-content: space-between; align-items: center; }
+.sched-slots { font-size: 13px; color: #606266; }
+.slot-progress { height: 4px; background: #eee; border-radius: 2px; margin-top: 8px; }
+.slot-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+
+/* 挂号记录 */
+.reg-list { max-height: 500px; overflow-y: auto; }
+.reg-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px; margin-bottom: 6px;
+  border-radius: 8px; background: #fafafa; transition: background 0.2s;
+}
+>>>>>>> a1ddc93abd8e47462da248ece3db69498a648e13
 .reg-item:hover { background: #f0f0f0; }
 .reg-num { font-weight: bold; font-size: 16px; color: #409eff; min-width: 32px; }
 .reg-info { flex: 1; }
