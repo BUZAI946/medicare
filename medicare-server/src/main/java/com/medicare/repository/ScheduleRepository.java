@@ -61,4 +61,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
      */
     @Query("SELECT COUNT(s) FROM Schedule s WHERE s.doctorId = :doctorId AND s.workDate = :date")
     long countByDoctorAndDate(@Param("doctorId") Long doctorId, @Param("date") LocalDate date);
+
+    boolean existsByDoctorIdAndWorkDateAndTimeSlot(Long doctorId, LocalDate workDate, String timeSlot);
+
+    List<Schedule> findByWorkDate(LocalDate workDate);
 }
