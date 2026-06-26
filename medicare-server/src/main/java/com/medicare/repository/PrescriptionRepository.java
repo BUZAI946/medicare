@@ -50,6 +50,20 @@ public interface PrescriptionRepository extends JpaRepository<Prescription, Long
     int cancel(@Param("id") Long id);
 
     /**
+     * 标记已缴费 — 状态 0→1
+     */
+    @Modifying
+    @Query("UPDATE Prescription p SET p.status = 1 WHERE p.id = :id AND p.status = 0")
+    int markAsPaid(@Param("id") Long id);
+
+    /**
+     * 回退到待缴费 — 状态 1→0
+     */
+    @Modifying
+    @Query("UPDATE Prescription p SET p.status = 0 WHERE p.id = :id AND p.status = 1")
+    int rollbackToPending(@Param("id") Long id);
+
+    /**
      * 按医生查询处方
      */
     List<Prescription> findByDoctorIdOrderByCreateTimeDesc(Long doctorId);

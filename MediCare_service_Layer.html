@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>MediCare Service 业务逻辑层 代码</title>
+<style>
+body { font-family: 'Segoe UI','Microsoft YaHei',sans-serif; margin: 40px; background: #fff; color: #1a1a2e; }
+h1 { text-align: center; color: #667eea; border-bottom: 3px solid #667eea; padding-bottom: 12px; font-size: 22px; }
+h2 { color: #764ba2; margin-top: 48px; padding: 10px 16px; background: #f5f3ff; border-left: 5px solid #667eea; border-radius: 4px; font-size: 16px; }
+.meta { color: #909399; font-size: 13px; margin-top: 4px; margin-bottom: 12px; }
+pre { background: #f8f9fb; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; overflow-x: auto; font-size: 12px; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; }
+code { font-family: 'Consolas','Courier New',monospace; font-size: 11px; }
+</style>
+</head>
+<body>
+<h1>MediCare 智慧医疗管理系统<br>Service 业务逻辑层 全部代码导出</h1>
+<p style="text-align:center;color:#909399;">共 11 个类 | 导出时间：2026-06-25 23:54:11</p>
+<h2>【第 1 个类】类名：DashboardService</h2>
+<p class="meta">所属层：Service 业务逻辑层 &nbsp;|&nbsp; 包路径：com.medicare.service &nbsp;|&nbsp; 文件名：DashboardService.java</p>
+<pre><code>
+package com.medicare.service;
+
+import com.medicare.dto.DashboardStats;
+import com.medicare.repository.MedicineRepository;
+import com.medicare.repository.PaymentRepository;
+import com.medicare.repository.RegistrationRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Service
+@RequiredArgsConstructor
+public class DashboardService {
+
+    private final RegistrationRepository registrationRepository;
+    private final MedicineRepository medicineRepository;
+    private final PaymentRepository paymentRepository;
+
+    public DashboardStats getDashboardStats() {
+        DashboardStats stats = new DashboardStats();
+        stats.setTodayRegCount(registrationRepository.findTodayList(LocalDate.now(), null).size());
+        stats.setWaitingCount(registrationRepository.findTodayList(LocalDate.now(), 0).size());
+        stats.setStockAlertCount(medicineRepository.findLowStockMedicines().size());
+        stats.setPendingPaymentCount(paymentRepository.countPending());
+        BigDecimal amount = paymentRepository.sumPaidToday(LocalDate.now());
+        stats.setTodayPaymentAmount(amount != null ? amount.toString() : "0.00");
+        return stats;
+    }
+}
+</code></pre>
+<h2>【第 2 个类】类名：DepartmentService</h2>
+<p class="meta">所属层：Service 业务逻辑层 &nbsp;|&nbsp; 包路径：com.medicare.service &nbsp;|&nbsp; 文件名：DepartmentService.java</p>
+<pre><code>
+package com.medicare.service;
+
+import com.medicare.entity.Department;
+import com.medicare.exception.BusinessException;
+import com.medicare.repository.DepartmentRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+/**
+ * 科室服务 — 科室 CRUD，名称唯一性校验
+ */
+@Service
+@RequiredArgsConstructor
+public class DepartmentService {
+
+    private final DepartmentRepository departmentRepository;
+
+    public List&lt;Department&gt; findAll() {
+        return departmentRepository.findAll();
+    }
+
+    public Department findById(Long id) {
+        return departmentRepository.findById(id)
+                .orElseThrow(() -&gt; new BusinessException("科室不存在"));
+    }
+
+    public Department create(Department dept) {
+        if (departmentRepository.existsByName(dept.getName())) {
+            throw new BusinessException("科室名称已存在");
+        }
+        return departmentRepository.save(dept);
+    }
+
+    public Department update(Long id, Department dept) {
+        Department existing = findById(id);
+        if (departmentRepository.existsByNameAndIdNot(dept.getName(), id)) {
+            throw new BusinessException("科室名称已存在");
+        }
+        existing.setName(dept.getName());
+        existing.setLocation(dept.getLocation());
+        existing.setPhone(dept.getPhone());
+        return departmentRepository.save(existing);
+    }
+
+    public void delete(Long id) {
+        if (!departmentRepository.existsById(id)) {
+            throw new BusinessException("科室不存在");
+        }
+        departmentRepository.deleteById(id);
+    }
+}
+</code></pre>
+<h2>【第 3 个类】类名：DoctorService</h2>
+<p class="meta">所属层：Service 业务逻辑层 &nbsp;|&nbsp; 包路径：com.medicare.service &nbsp;|&nbsp; 文件名：DoctorService.java</p>
+<pre><code>
+package com.medicare.service;
+
+import com.medicare.dto.DoctorVO;
+import com.medicare.entity.Doctor;
+import com.medicare.exception.BusinessException;
+import com.medicare.repository.DepartmentRepository;
+import com.medicare.repository.DoctorRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+/**
+ * 医生服务 — 医生 CRUD + 按科室查询，创建/更新时校验科室存在
+ */
+@Service
+@RequiredArgsConstructor
+public class DoctorService {
+
+    private final DoctorRepository doctorRepository;
+    private final DepartmentRepository departmentRepository;
+
+    public List&lt;DoctorVO&gt; findDoctorVOList(Long deptId) {
+        return doctorRepository.findDoctorVOList(deptId);
+    }
+
+    public List&lt;Doctor&gt; findByDepartmentId(Long deptId) {
+        return doctorRepository.findByDepartmentIdAndStatus(deptId, 1);
+    }
+
+    public Doctor findById(Long id) {
+        return doctorRepository.findById(id)
+                .orElseThrow(() -&gt; new BusinessException("医生不存在"));
+    }
+
+    public Doctor create(Doctor doctor) {
+        if (!departmentRepository.existsById(doctor.getDepartmentId())) {
+            throw new BusinessException("所属科室不存在");
+        }
+        return doctorRepository.save(doctor);
+    }
+
+    public Doctor update(Long id, Doctor doctor) {
+        Doctor existing = findById(id);
+        if (!departmentRepository.existsById(doctor.getDepartmentId())) {
+            throw new BusinessException("所属科室不存在");
+        }
+        existing.setName(doctor.getName());
+        existing.setDepartmentId(doctor.getDepartmentId());
+        existing.setTitle(doctor.getTitle());
+        existing.setStatus(doctor.getStatus());
+        return doctorRepository.save(existing);
+    }
+
+    public void delete(Long id) {
+        if (!doctorRepository.existsById(id)) {
+            throw new BusinessException("医生不存在");
+        }
+        doctorRepository.deleteById(id);
+    }
+}
+</code></pre>
+<h2>【第 4 个类】类名：MedicalRecordService</h2>
+<p class="meta">所属层：Service 业务逻辑层 &nbsp;|&nbsp; 包路径：com.medicare.service &nbsp;|&nbsp; 文件名：MedicalRecordService.java</p>
+<pre><code>
+package com.medicare.service;
+
+import com.medicare.dto.MedicalRecordVO;
+import com.medicare.entity.MedicalRecord;
+import com.medicare.exception.BusinessException;
+import com.medicare.repository.MedicalRecordRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+/**
+ * 病历服务 — 病历 CRUD，一个挂号只能对应一份病历
+ */
+@Service
+@RequiredArgsConstructor
+public class MedicalRecordService {
+
+    private final MedicalRecordRepository medicalRecordRepository;
+
+    /** 病历列表查询（支持按患者ID或挂号ID筛选，返回含关联名称的 VO） */
+    public List&lt;MedicalRecordVO&gt; findRecordVOList(Long patientId, Long registrationId) {
+        return medicalRecordRepository.findRecordVOList(patientId, registrationId);
+    }
+
+    public MedicalRecordVO findRecordVOByRegistrationId(Long registrationId) {
+        MedicalRecordVO vo = medicalRecordRepository.findRecordVOByRegistrationId(registrationId);
+        if (vo == null) {
+            throw new BusinessException("病历不存在");
+        }
+        return vo;
+    }
+
+    public MedicalRecordVO findRecordVOById(Long id) {
+        MedicalRecordVO vo = medicalRecordRepository.findRecordVOById(id);
+        if (vo == null) {
+            throw new BusinessException("病历不存在");
+        }
+        return vo;
+    }
+
+    public MedicalRecord findById(Long id) {
+        return medicalRecordRepository.findById(id)
+                .orElseThrow(() -&gt; new BusinessException("病历不存在"));
+    }
+
+    /** 创建病历 — 校验同一挂号不能重复创建 */
+    public MedicalRecord create(MedicalRecord record) {
+        if (medicalRecordRepository.findByRegistrationId(record.getRegistrationId()).isPresent()) {
+            throw new BusinessException("该挂号已有病历记录");
+        }
+        return medicalRecordRepository.save(record);
+    }
+
+    /** 更新病历 — 仅更新医学字段（主诉/现病史/既往史/体格检查/诊断/医嘱） */
+    public MedicalRecord update(Long id, MedicalRecord record) {
+        MedicalRecord existing = findById(id);
+        existing.setChiefComplaint(record.getChiefComplaint());
+        existing.setPresentIllness(record.getPresentIllness());
+        existing.setPastHistory(record.getPastHistory());
+        existing.setPhysicalExam(record.getPhysicalExam());
+        existing.setDiagnosis(record.getDiagnosis());
+        existing.setAdvice(record.getAdvice());
+        return medicalRecordRepository.save(existing);
+    }
+}
+</code></pre>
+<h2>【第 5 个类】类名：MedicineService</h2>
+<p class="meta">所属层：Service 业务逻辑层 &nbsp;|&nbsp; 包路径：com.medicare.service &nbsp;|&nbsp; 文件名：MedicineService.java</p>
+<pre><code>
+package com.medicare.service;
+
+import com.medicare.entity.InventoryLog;
+import com.medicare.entity.Medicine;
+import com.medicare.exception.BusinessException;
+import com.medicare.repository.InventoryLogRepository;
+import com.medicare.repository.MedicineRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class MedicineService {
+
+    private final MedicineRepository medicineRepository;
+    private final InventoryLogRepository inventoryLogRepository;
+
+    public List&lt;Medicine&gt; findAll() {
+        return medicineRepository.findByStatus(1);
+    }
+
+    public List&lt;Medicine&gt; search(String keyword) {
+        return medicineRepository.searchByKeyword(keyword);
+    }
+
+    public List&lt;Medicine&gt; findLowStock() {
+        return medicineRepository.findLowStockMedicines();
+    }
+
+    public Medicine findById(Long id) {
+        return medicineRepository.findById(id)
+                .orElseThrow(() -&gt; new BusinessException("药品不存在"));
+    }
+
+    public Medicine create(Medicine medicine) {
+        if (medicineRepository.existsByNameAndSpec(medicine.getName(), medicine.getSpec())) {
+            throw new BusinessException("该药品规格已存在");
+        }
+        return medicineRepository.save(medicine);
+    }
+
+    public Medicine update(Long id, Medicine medicine) {
+        Medicine existing = findById(id);
+        if (medicineRepository.existsByNameAndSpecAndIdNot(medicine.getName(), medicine.getSpec(), id)) {
+            throw new BusinessException("该药品规格已存在");
+        }
+        existing.setName(medicine.getName());
+        existing.setSpec(medicine.getSpec());
+        existing.setUnit(medicine.getUnit());
+        existing.setSafetyStock(medicine.getSafetyStock());
+        existing.setPinyinCode(medicine.getPinyinCode());
+        existing.setPrice(medicine.getPrice());
+        existing.setManufacturer(medicine.getManufacturer());
+        existing.setStatus(medicine.getStatus());
+        return medicineRepository.save(existing);
+    }
+
+    public void delete(Long id) {
+        if (!medicineRepository.existsById(id)) {
+            throw new BusinessException("药品不存在");
+        }
+        medicineRepository.deleteById(id);
+    }
+
+    /**
+     * 入库 — 事务操作：增加库存 + 记录日志
+     */
+    @Transactional
+    public void stockIn(Long medicineId, int quantity, String batchNo, String expiryDate, String operator, String remark) {
+        Medicine medicine = findById(medicineId);
+        medicine.setStock(medicine.getStock() + quantity);
+        medicineRepository.save(medicine);
+
+        InventoryLog log = new InventoryLog();
+        log.setMedicineId(medicineId);
+        log.setType(InventoryLog.TYPE_STOCK_IN);
+        log.setQuantity(quantity);
+        log.setBatchNo(batchNo);
+        if (expiryDate != null &amp;&amp; !expiryDate.isBlank()) {
+            log.setExpiryDate(LocalDate.parse(expiryDate));
+        }
+        log.setOperator(operator);
+        log.setRemark(remark);
+        inventoryLogRepository.save(log);
+    }
+
+    /**
+     * 出库 — 事务操作：安全扣减库存 + 记录日志
+     */
+    @Transactional
+    public void stockOut(Long medicineId, int quantity, String batchNo, String expiryDate, String operator, String remark) {
+        int affected = medicineRepository.safeDecrementStock(medicineId, quantity);
+        if (affected == 0) {
+            throw new BusinessException("库存不足");
+        }
+
+        InventoryLog log = new InventoryLog();
+        log.setMedicineId(medicineId);
+        log.setType(InventoryLog.TYPE_STOCK_OUT);
+        log.setQuantity(quantity);
+        log.setBatchNo(batchNo);
+        if (expiryDate != null &amp;&amp; !expiryDate.isBlank()) {
+            log.setExpiryDate(LocalDate.parse(expiryDate));
+        }
+        log.setOperator(operator);
+        log.setRemark(remark);
+        inventoryLogRepository.save(log);
+    }
+
+}
+</code></pre>
+<h2>【第 6 个类】类名：PatientService</h2>
+<p class="meta">所属层：Service 业务逻辑层 &nbsp;|&nbsp; 包路径：com.medicare.service &nbsp;|&nbsp; 文件名：PatientService.java</p>
+<pre><code>
+package com.medicare.service;
+
+import com.medicare.entity.Patient;
+import com.medicare.exception.BusinessException;
+import com.medicare.repository.PatientRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+/**
+ * 患者服务 — 患者 CRUD + 搜索，身份证号唯一性校验
+ */
+@Service
+@RequiredArgsConstructor
+public class PatientService {
+
+    private final PatientRepository patientRepository;
+
+    public List&lt;Patient&gt; findAll() {
+        return patientRepository.findAll();
+    }
+
+    public Patient findById(Long id) {
+        return patientRepository.findById(id)
+                .orElseThrow(() -&gt; new BusinessException("患者不存在"));
+    }
+
+    public List&lt;Patient&gt; search(String keyword) {
+        return patientRepository.search(keyword);
+    }
+
+    /** 创建患者 — 身份证号唯一性校验 */
+    public Patient create(Patient patient) {
+        if (patientRepository.existsByIdCard(patient.getIdCard())) {
+            throw new BusinessException("身份证号已存在");
+        }
+        return patientRepository.save(patient);
+    }
+
+    /** 更新患者 — 身份证号唯一性校验（排除自身） */
+    public Patient update(Long id, Patient patient) {
+        Patient existing = findById(id);
+        if (patientRepository.existsByIdCardAndIdNot(patient.getIdCard(), id)) {
+            throw new BusinessException("身份证号已存在");
+        }
+        existing.setIdCard(patient.getIdCard());
+        existing.setName(patient.getName());
+        existing.setGender(patient.getGender());
+        existing.setBirthDate(patient.getBirthDate());
+        existing.setPhone(patient.getPhone());
+        existing.setAddress(patient.getAddress());
+        existing.setAllergyInfo(patient.getAllergyInfo());
+        return patientRepository.save(existing);
+    }
+
+    public void delete(Long id) {
+        if (!patientRepository.existsById(id)) {
+            throw new BusinessException("患者不存在");
+        }
+        patientRepository.deleteById(id);
+    }
+}
+</code></pre>
+<h2>【第 7 个类】类名：PaymentService</h2>
+<p class="meta">所属层：Service 业务逻辑层 &nbsp;|&nbsp; 包路径：com.medicare.service &nbsp;|&nbsp; 文件名：PaymentService.java</p>
+<pre><code>
+package com.medicare.service;
+
+import com.medicare.dto.CreatePaymentRequest;
+import com.medicare.dto.PaymentVO;
+import com.medicare.entity.Payment;
+import com.medicare.exception.BusinessException;
+import com.medicare.repository.PaymentRepository;
+import com.medicare.repository.PrescriptionRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class PaymentService {
+
+    private final PaymentRepository paymentRepository;
+    private final PrescriptionRepository prescriptionRepository;
+
+    public List&lt;PaymentVO&gt; list(Long patientId, Integer status) {
+        return paymentRepository.findPaymentVOList(patientId, status);
+    }
+
+    public Payment getById(Long id) {
+        return paymentRepository.findById(id)
+                .orElseThrow(() -&gt; new BusinessException("收费记录不存在"));
+    }
+
+    @Transactional
+    public Payment create(CreatePaymentRequest request) {
+        if (request.getRegistrationId() == null &amp;&amp; request.getPrescriptionId() == null) {
+            throw new BusinessException("必须关联挂号或处方");
+        }
+        Payment payment = new Payment();
+        payment.setPatientId(request.getPatientId());
+        payment.setRegistrationId(request.getRegistrationId());
+        payment.setPrescriptionId(request.getPrescriptionId());
+        payment.setAmount(request.getAmount());
+        payment.setPaymentMethod(request.getPaymentMethod());
+        payment.setRemark(request.getRemark());
+        payment.setStatus(Payment.STATUS_PENDING);
+        return paymentRepository.save(payment);
+    }
+
+    @Transactional
+    public void pay(Long id) {
+        int rows = paymentRepository.pay(id);
+        if (rows == 0) {
+            throw new BusinessException("收费失败：记录不存在或状态不正确");
+        }
+        Payment payment = paymentRepository.findById(id).orElse(null);
+        if (payment != null &amp;&amp; payment.getPrescriptionId() != null) {
+            prescriptionRepository.markAsPaid(payment.getPrescriptionId());
+        }
+    }
+
+    @Transactional
+    public void refund(Long id) {
+        int rows = paymentRepository.refund(id);
+        if (rows == 0) {
+            throw new BusinessException("退款失败：记录不存在或状态不正确");
+        }
+        Payment payment = paymentRepository.findById(id).orElse(null);
+        if (payment != null &amp;&amp; payment.getPrescriptionId() != null) {
+            prescriptionRepository.rollbackToPending(payment.getPrescriptionId());
+        }
+    }
+}
+</code></pre>
+<h2>【第 8 个类】类名：PrescriptionService</h2>
+<p class="meta">所属层：Service 业务逻辑层 &nbsp;|&nbsp; 包路径：com.medicare.service &nbsp;|&nbsp; 文件名：PrescriptionService.java</p>
+<pre><code>
+package com.medicare.service;
+
+import com.medicare.dto.InventoryLogVO;
+import com.medicare.dto.PrescriptionItemVO;
+import com.medicare.dto.PrescriptionListVO;
+import com.medicare.dto.PrescriptionVO;
+import com.medicare.entity.*;
+import com.medicare.exception.BusinessException;
+import com.medicare.repository.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class PrescriptionService {
+
+    private final PrescriptionRepository prescriptionRepository;
+    private final PrescriptionItemRepository prescriptionItemRepository;
+    private final MedicineRepository medicineRepository;
+    private final InventoryLogRepository inventoryLogRepository;
+    private final PatientRepository patientRepository;
+    private final DoctorRepository doctorRepository;
+
+    /**
+     * 开立处方 — 事务操作：保存处方 + 逐条扣减库存 + 记录日志 + 保存明细
+     * 修复：库存扣减使用 safeDecrementStock 原子操作
+     */
+    @Transactional
+    public Prescription createPrescription(Prescription prescription, List&lt;PrescriptionItem&gt; items) {
+        // 保存处方主表
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (PrescriptionItem item : items) {
+            item.setAmount(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+            totalAmount = totalAmount.add(item.getAmount());
+        }
+        prescription.setTotalAmount(totalAmount);
+        prescription.setStatus(Prescription.STATUS_PENDING);
+        prescription = prescriptionRepository.save(prescription);
+
+        // 逐条扣减库存 + 记录日志 + 保存明细
+        for (PrescriptionItem item : items) {
+            // 安全扣减库存（WHERE stock &gt;= :qty）
+            int affected = medicineRepository.safeDecrementStock(item.getMedicineId(), item.getQuantity());
+            if (affected == 0) {
+                throw new BusinessException("药品库存不足：ID=" + item.getMedicineId());
+            }
+
+            // 保存明细
+            item.setPrescriptionId(prescription.getId());
+            prescriptionItemRepository.save(item);
+
+            // 记录库存日志
+            InventoryLog log = new InventoryLog();
+            log.setMedicineId(item.getMedicineId());
+            log.setType(InventoryLog.TYPE_STOCK_OUT);
+            log.setQuantity(item.getQuantity());
+            log.setOperator("system");
+            log.setRemark("处方出库 - 处方ID:" + prescription.getId());
+            inventoryLogRepository.save(log);
+        }
+
+        return prescription;
+    }
+
+    /**
+     * 取药 — 状态改为已取药
+     */
+    @Transactional
+    public void dispense(Long id) {
+        int affected = prescriptionRepository.dispense(id);
+        if (affected == 0) {
+            throw new BusinessException("取药失败，处方可能不在待缴费/已缴费状态");
+        }
+    }
+
+    /**
+     * 作废处方 — 事务操作：逐条回滚库存 + 更新处方状态
+     */
+    @Transactional
+    public void cancelPrescription(Long id) {
+        Prescription prescription = prescriptionRepository.findById(id)
+                .orElseThrow(() -&gt; new BusinessException("处方不存在"));
+        if (prescription.getStatus() == Prescription.STATUS_CANCELLED) {
+            throw new BusinessException("处方已作废");
+        }
+        if (prescription.getStatus() == Prescription.STATUS_DISPENSED) {
+            throw new BusinessException("已取药处方不能作废");
+        }
+
+        // 逐条回滚库存
+        List&lt;PrescriptionItem&gt; items = prescriptionItemRepository.findByPrescriptionId(id);
+        for (PrescriptionItem item : items) {
+            medicineRepository.incrementStock(item.getMedicineId(), item.getQuantity());
+            // 记录库存日志
+            InventoryLog log = new InventoryLog();
+            log.setMedicineId(item.getMedicineId());
+            log.setType(InventoryLog.TYPE_STOCK_IN);
+            log.setQuantity(item.getQuantity());
+            log.setOperator("system");
+            log.setRemark("处方作废回滚 - 处方ID:" + id);
+            inventoryLogRepository.save(log);
+        }
+
+        // 更新处方状态
+        prescriptionRepository.cancel(id);
+    }
+
+    /**
+     * 处方列表查询（带患者名、医生名）
+     */
+    public List&lt;PrescriptionListVO&gt; listPrescriptionVOs(Long patientId, Boolean today) {
+        LocalDate todayDate = (today != null &amp;&amp; today) ? LocalDate.now() : null;
+        return prescriptionRepository.findPrescriptionVOList(patientId, todayDate);
+    }
+
+    /**
+     * 查询处方详情（带明细和关联名称）
+     * 优化：使用批量查询替代 N+1
+     */
+    public PrescriptionVO findPrescriptionVOById(Long id) {
+        Prescription prescription = prescriptionRepository.findById(id)
+                .orElseThrow(() -&gt; new BusinessException("处方不存在"));
+
+        PrescriptionVO vo = new PrescriptionVO();
+        vo.setId(prescription.getId());
+        vo.setRecordId(prescription.getRecordId());
+        vo.setPatientId(prescription.getPatientId());
+        vo.setDoctorId(prescription.getDoctorId());
+        vo.setTotalAmount(prescription.getTotalAmount());
+        vo.setStatus(prescription.getStatus());
+        vo.setCreateTime(prescription.getCreateTime());
+
+        // 关联名称
+        patientRepository.findById(prescription.getPatientId())
+                .ifPresent(p -&gt; vo.setPatientName(p.getName()));
+        doctorRepository.findById(prescription.getDoctorId())
+                .ifPresent(d -&gt; vo.setDoctorName(d.getName()));
+
+        // 明细列表 — 批量查询药品信息，避免 N+1
+        List&lt;PrescriptionItem&gt; items = prescriptionItemRepository.findByPrescriptionId(id);
+        List&lt;Long&gt; medicineIds = items.stream().map(PrescriptionItem::getMedicineId).distinct().toList();
+        Map&lt;Long, Medicine&gt; medicineMap = medicineRepository.findAllById(medicineIds)
+                .stream().collect(Collectors.toMap(Medicine::getId, Function.identity()));
+
+        List&lt;PrescriptionItemVO&gt; itemVOs = new ArrayList&lt;&gt;();
+        for (PrescriptionItem item : items) {
+            PrescriptionItemVO itemVO = new PrescriptionItemVO();
+            itemVO.setId(item.getId());
+            itemVO.setPrescriptionId(item.getPrescriptionId());
+            itemVO.setMedicineId(item.getMedicineId());
+            itemVO.setQuantity(item.getQuantity());
+            itemVO.setDosage(item.getDosage());
+            itemVO.setUsageDesc(item.getUsageDesc());
+            itemVO.setUnitPrice(item.getUnitPrice());
+            itemVO.setAmount(item.getAmount());
+            Medicine med = medicineMap.get(item.getMedicineId());
+            if (med != null) {
+                itemVO.setMedicineName(med.getName());
+                itemVO.setMedicineSpec(med.getSpec());
+                itemVO.setMedicineUnit(med.getUnit());
+            }
+            itemVOs.add(itemVO);
+        }
+        vo.setItems(itemVOs);
+
+        return vo;
+    }
+
+    /**
+     * 按病历ID查询处方
+     */
+    public PrescriptionVO findByRecordId(Long recordId) {
+        return prescriptionRepository.findByRecordId(recordId)
+                .map(p -&gt; findPrescriptionVOById(p.getId()))
+                .orElse(null);
+    }
+
+    public List&lt;InventoryLogVO&gt; findInventoryLogVOList(Long medicineId) {
+        return inventoryLogRepository.findLogVOList(medicineId);
+    }
+}
+</code></pre>
+<h2>【第 9 个类】类名：RegistrationService</h2>
+<p class="meta">所属层：Service 业务逻辑层 &nbsp;|&nbsp; 包路径：com.medicare.service &nbsp;|&nbsp; 文件名：RegistrationService.java</p>
+<pre><code>
+package com.medicare.service;
+
+import com.medicare.dto.RegistrationVO;
+import com.medicare.entity.Registration;
+import com.medicare.entity.Schedule;
+import com.medicare.exception.BusinessException;
+import com.medicare.repository.RegistrationRepository;
+import com.medicare.repository.ScheduleRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class RegistrationService {
+
+    private final RegistrationRepository registrationRepository;
+    private final ScheduleRepository scheduleRepository;
+
+    public List&lt;RegistrationVO&gt; findTodayList(LocalDate date, Integer status) {
+        return registrationRepository.findTodayList(date, status);
+    }
+
+    public List&lt;RegistrationVO&gt; findByDoctorAndStatusIn(Long doctorId, List&lt;Integer&gt; statuses) {
+        return registrationRepository.findByDoctorAndStatusIn(doctorId, statuses);
+    }
+
+    public List&lt;RegistrationVO&gt; findByPatientId(Long patientId) {
+        return registrationRepository.findByPatientId(patientId);
+    }
+
+    /**
+     * 挂号 — 事务操作：原子扣减号源 + 保存挂号记录
+     * 修复：号源扣减现在在事务内执行，原项目此操作脱离事务
+     */
+    @Transactional
+    public Registration register(Long patientId, Long scheduleId) {
+        // 1. 原子扣减号源（WHERE remain_slots &gt; 0 防超卖）
+        int affected = scheduleRepository.decrementRemain(scheduleId);
+        if (affected == 0) {
+            throw new BusinessException("号源不足，请选择其他号源");
+        }
+
+        // 2. 获取排班信息
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -&gt; new BusinessException("排班不存在"));
+
+        // 3. 分配序号
+        long seqNo = registrationRepository.countByScheduleAndNotCancelled(scheduleId) + 1;
+
+        // 4. 创建挂号记录
+        Registration reg = new Registration();
+        reg.setPatientId(patientId);
+        reg.setScheduleId(scheduleId);
+        reg.setDoctorId(schedule.getDoctorId());  // 修复：从 schedule 获取 doctorId
+        reg.setStatus(Registration.STATUS_WAITING);
+        reg.setSeqNo((int) seqNo);
+        reg.setFee(java.math.BigDecimal.TEN);  // 默认挂号费 10 元
+        return registrationRepository.save(reg);
+    }
+
+    /**
+     * 叫号 — 状态 0→1
+     */
+    @Transactional
+    public void callPatient(Long id) {
+        int affected = registrationRepository.callPatient(id);
+        if (affected == 0) {
+            throw new BusinessException("叫号失败，可能该挂号不在候诊状态");
+        }
+    }
+
+    /**
+     * 完成就诊 — 状态 1→2
+     */
+    @Transactional
+    public void completeRegistration(Long id) {
+        int affected = registrationRepository.completeRegistration(id);
+        if (affected == 0) {
+            throw new BusinessException("完成就诊失败，可能该挂号不在就诊中状态");
+        }
+    }
+
+    /**
+     * 取消挂号 — 状态改为已取消 + 回增号源
+     */
+    @Transactional
+    public void cancelRegistration(Long id) {
+        Registration reg = registrationRepository.findById(id)
+                .orElseThrow(() -&gt; new BusinessException("挂号不存在"));
+        if (reg.getStatus() == Registration.STATUS_CANCELLED) {
+            throw new BusinessException("该挂号已取消");
+        }
+        if (reg.getStatus() == Registration.STATUS_COMPLETED) {
+            throw new BusinessException("已完成的挂号不能取消");
+        }
+        reg.setStatus(Registration.STATUS_CANCELLED);
+        registrationRepository.save(reg);
+        // 回增号源
+        scheduleRepository.incrementRemain(reg.getScheduleId());
+    }
+}
+</code></pre>
+<h2>【第 10 个类】类名：ScheduleService</h2>
+<p class="meta">所属层：Service 业务逻辑层 &nbsp;|&nbsp; 包路径：com.medicare.service &nbsp;|&nbsp; 文件名：ScheduleService.java</p>
+<pre><code>
+package com.medicare.service;
+
+import com.medicare.dto.ScheduleVO;
+import com.medicare.entity.Schedule;
+import com.medicare.exception.BusinessException;
+import com.medicare.repository.DoctorRepository;
+import com.medicare.repository.ScheduleRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
+
+/**
+ * 排班服务 — 排班 CRUD + 可用号源查询
+ * &lt;p&gt;
+ * 创建排班时自动将 remainSlots 设为 totalSlots；
+ * 挂号时通过 ScheduleRepository.decrementRemain() 原子扣减号源
+ */
+@Service
+@RequiredArgsConstructor
+public class ScheduleService {
+
+    private final ScheduleRepository scheduleRepository;
+    private final DoctorRepository doctorRepository;
+
+    public List&lt;ScheduleVO&gt; findScheduleVOList(LocalDate date, Long deptId) {
+        return scheduleRepository.findScheduleVOList(date, deptId);
+    }
+
+    public List&lt;ScheduleVO&gt; findAvailableSchedules(LocalDate date, Long deptId) {
+        return scheduleRepository.findAvailableSchedules(date, deptId);
+    }
+
+    public Schedule findById(Long id) {
+        return scheduleRepository.findById(id)
+                .orElseThrow(() -&gt; new BusinessException("排班不存在"));
+    }
+
+    public Schedule create(Schedule schedule) {
+        if (!doctorRepository.existsById(schedule.getDoctorId())) {
+            throw new BusinessException("医生不存在");
+        }
+        schedule.setRemainSlots(schedule.getTotalSlots());
+        return scheduleRepository.save(schedule);
+    }
+
+    public Schedule update(Long id, Schedule schedule) {
+        Schedule existing = findById(id);
+        if (!doctorRepository.existsById(schedule.getDoctorId())) {
+            throw new BusinessException("医生不存在");
+        }
+        existing.setDoctorId(schedule.getDoctorId());
+        existing.setWorkDate(schedule.getWorkDate());
+        existing.setTimeSlot(schedule.getTimeSlot());
+        existing.setTotalSlots(schedule.getTotalSlots());
+        existing.setRemainSlots(schedule.getRemainSlots());
+        return scheduleRepository.save(existing);
+    }
+
+    public void delete(Long id) {
+        if (!scheduleRepository.existsById(id)) {
+            throw new BusinessException("排班不存在");
+        }
+        scheduleRepository.deleteById(id);
+    }
+}
+</code></pre>
+<h2>【第 11 个类】类名：SysUserService</h2>
+<p class="meta">所属层：Service 业务逻辑层 &nbsp;|&nbsp; 包路径：com.medicare.service &nbsp;|&nbsp; 文件名：SysUserService.java</p>
+<pre><code>
+package com.medicare.service;
+
+import com.medicare.entity.SysUser;
+import com.medicare.exception.BusinessException;
+import com.medicare.repository.SysUserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+/**
+ * 系统用户服务 — 用户 CRUD + 登录校验 + 密码管理
+ * &lt;p&gt;
+ * 密码策略：创建时 BCrypt 加密；登录时兼容明文和 BCrypt（迁移过渡期）；
+ * 修改密码需验证旧密码
+ */
+@Service
+@RequiredArgsConstructor
+public class SysUserService {
+
+    private final SysUserRepository sysUserRepository;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    public List&lt;SysUser&gt; findAll() {
+        return sysUserRepository.findAll();
+    }
+
+    public SysUser findById(Long id) {
+        return sysUserRepository.findById(id)
+                .orElseThrow(() -&gt; new BusinessException("用户不存在"));
+    }
+
+    public SysUser findByUsername(String username) {
+        return sysUserRepository.findByUsername(username)
+                .orElseThrow(() -&gt; new BusinessException("用户名或密码错误"));
+    }
+
+    /** 创建用户 — 密码 BCrypt 加密 + 用户名唯一性校验 */
+    public SysUser create(SysUser user) {
+        if (sysUserRepository.existsByUsername(user.getUsername())) {
+            throw new BusinessException("用户名已存在");
+        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return sysUserRepository.save(user);
+    }
+
+    public SysUser update(Long id, SysUser user) {
+        SysUser existing = findById(id);
+        if (sysUserRepository.existsByUsernameAndIdNot(user.getUsername(), id)) {
+            throw new BusinessException("用户名已存在");
+        }
+        existing.setUsername(user.getUsername());
+        existing.setRealName(user.getRealName());
+        existing.setRole(user.getRole());
+        existing.setStatus(user.getStatus());
+        existing.setDoctorId(user.getDoctorId());
+        return sysUserRepository.save(existing);
+    }
+
+    /** 删除用户 — 禁止删除超级管理员 admin */
+    public void delete(Long id) {
+        SysUser user = findById(id);
+        if ("admin".equals(user.getUsername())) {
+            throw new BusinessException("不能删除超级管理员");
+        }
+        sysUserRepository.deleteById(id);
+    }
+
+    public void changePassword(Long id, String oldPassword, String newPassword) {
+        SysUser user = findById(id);
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new BusinessException("旧密码不正确");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        sysUserRepository.save(user);
+    }
+
+    /**
+     * 登录校验（兼容明文密码和 BCrypt 密码）
+     */
+    public SysUser login(String username, String rawPassword) {
+        SysUser user = findByUsername(username);
+        if (user.getStatus() != 1) {
+            throw new BusinessException("账号已被禁用");
+        }
+        // 兼容明文密码和BCrypt密码
+        boolean match;
+        if (user.getPassword().startsWith("$2a$") || user.getPassword().startsWith("$2b$")) {
+            match = passwordEncoder.matches(rawPassword, user.getPassword());
+        } else {
+            // 明文密码兼容（迁移阶段）
+            match = rawPassword.equals(user.getPassword());
+        }
+        if (!match) {
+            throw new BusinessException("用户名或密码错误");
+        }
+        return user;
+    }
+}
+</code></pre>
+</body></html>

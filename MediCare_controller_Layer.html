@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>MediCare Controller 控制器层 代码</title>
+<style>
+body { font-family: 'Segoe UI','Microsoft YaHei',sans-serif; margin: 40px; background: #fff; color: #1a1a2e; }
+h1 { text-align: center; color: #667eea; border-bottom: 3px solid #667eea; padding-bottom: 12px; font-size: 22px; }
+h2 { color: #764ba2; margin-top: 48px; padding: 10px 16px; background: #f5f3ff; border-left: 5px solid #667eea; border-radius: 4px; font-size: 16px; }
+.meta { color: #909399; font-size: 13px; margin-top: 4px; margin-bottom: 12px; }
+pre { background: #f8f9fb; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; overflow-x: auto; font-size: 12px; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; }
+code { font-family: 'Consolas','Courier New',monospace; font-size: 11px; }
+</style>
+</head>
+<body>
+<h1>MediCare 智慧医疗管理系统<br>Controller 控制器层 全部代码导出</h1>
+<p style="text-align:center;color:#909399;">共 12 个类 | 导出时间：2026-06-25 23:54:11</p>
+<h2>【第 1 个类】类名：AuthController</h2>
+<p class="meta">所属层：Controller 控制器层 &nbsp;|&nbsp; 包路径：com.medicare.controller &nbsp;|&nbsp; 文件名：AuthController.java</p>
+<pre><code>
+package com.medicare.controller;
+
+import com.medicare.auth.AuthInterceptor;
+import com.medicare.dto.LoginRequest;
+import com.medicare.dto.Result;
+import com.medicare.entity.SysUser;
+import com.medicare.service.SysUserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * 认证控制器 — 登录 / 登出 / 获取当前用户
+ * &lt;p&gt;
+ * 登录流程：前端提交账密 → SysUserService.login() 校验 → 成功后存入 HttpSession → 返回用户信息（密码置空）
+ * 后续请求通过 AuthInterceptor 从 Session 取用户，未登录返回 401。
+ * 角色权限由 @RequireRole + RoleCheckAspect 切面控制。
+ */
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final SysUserService sysUserService;
+
+    /**
+     * 登录 — 校验账密后写入 Session
+     * 密码兼容明文（迁移阶段）与 BCrypt 两种格式
+     */
+    @PostMapping("/login")
+    public Result&lt;SysUser&gt; login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+        SysUser user = sysUserService.login(request.getUsername(), request.getPassword());
+        // 密码清空，不返回给前端
+        user.setPassword(null);
+        // 存入 Session，后续 AuthInterceptor 据此判断登录状态
+        httpRequest.getSession(true).setAttribute(AuthInterceptor.CURRENT_USER_KEY, user);
+        return Result.ok(user);
+    }
+
+    /**
+     * 登出 — 销毁 Session
+     */
+    @PostMapping("/logout")
+    public Result&lt;Void&gt; logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        return Result.ok();
+    }
+
+    /**
+     * 获取当前登录用户信息（前端刷新页面后恢复登录态）
+     */
+    @GetMapping("/current")
+    public Result&lt;SysUser&gt; current(HttpServletRequest request) {
+        SysUser user = AuthInterceptor.getCurrentUser(request);
+        if (user != null) {
+            user.setPassword(null);
+        }
+        return Result.ok(user);
+    }
+}
+</code></pre>
+<h2>【第 2 个类】类名：DashboardController</h2>
+<p class="meta">所属层：Controller 控制器层 &nbsp;|&nbsp; 包路径：com.medicare.controller &nbsp;|&nbsp; 文件名：DashboardController.java</p>
+<pre><code>
+package com.medicare.controller;
+
+import com.medicare.dto.DashboardStats;
+import com.medicare.dto.Result;
+import com.medicare.service.DashboardService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * 仪表盘控制器 — 首页统计数据
+ * &lt;p&gt;
+ * 返回今日挂号数、候诊人数、库存预警数，供前端 Dashboard 展示
+ */
+@RestController
+@RequestMapping("/api/dashboard")
+@RequiredArgsConstructor
+public class DashboardController {
+
+    private final DashboardService dashboardService;
+
+    @GetMapping("/stats")
+    public Result&lt;DashboardStats&gt; stats() {
+        return Result.ok(dashboardService.getDashboardStats());
+    }
+}
+</code></pre>
+<h2>【第 3 个类】类名：DepartmentController</h2>
+<p class="meta">所属层：Controller 控制器层 &nbsp;|&nbsp; 包路径：com.medicare.controller &nbsp;|&nbsp; 文件名：DepartmentController.java</p>
+<pre><code>
+package com.medicare.controller;
+
+import com.medicare.auth.RequireRole;
+import com.medicare.dto.Result;
+import com.medicare.entity.Department;
+import com.medicare.service.DepartmentService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 科室控制器 — 科室 CRUD
+ * &lt;p&gt;
+ * 科室是医生和排班的顶层依赖，名称唯一；删除前需确认无关联医生
+ */
+@RestController
+@RequestMapping("/api/departments")
+@RequiredArgsConstructor
+public class DepartmentController {
+
+    private final DepartmentService departmentService;
+
+    @GetMapping
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;List&lt;Department&gt;&gt; list() {
+        return Result.ok(departmentService.findAll());
+    }
+
+    @GetMapping("/{id}")
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;Department&gt; detail(@PathVariable Long id) {
+        return Result.ok(departmentService.findById(id));
+    }
+
+    @PostMapping
+    @RequireRole("admin")
+    public Result&lt;Department&gt; create(@Valid @RequestBody Department department) {
+        return Result.ok(departmentService.create(department));
+    }
+
+    @PutMapping("/{id}")
+    @RequireRole("admin")
+    public Result&lt;Department&gt; update(@PathVariable Long id, @Valid @RequestBody Department department) {
+        return Result.ok(departmentService.update(id, department));
+    }
+
+    @DeleteMapping("/{id}")
+    @RequireRole("admin")
+    public Result&lt;Void&gt; delete(@PathVariable Long id) {
+        departmentService.delete(id);
+        return Result.ok();
+    }
+}
+</code></pre>
+<h2>【第 4 个类】类名：DoctorController</h2>
+<p class="meta">所属层：Controller 控制器层 &nbsp;|&nbsp; 包路径：com.medicare.controller &nbsp;|&nbsp; 文件名：DoctorController.java</p>
+<pre><code>
+package com.medicare.controller;
+
+import com.medicare.auth.RequireRole;
+import com.medicare.dto.DoctorVO;
+import com.medicare.dto.Result;
+import com.medicare.entity.Doctor;
+import com.medicare.service.DoctorService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 医生控制器 — 医生 CRUD + 按科室筛选
+ * &lt;p&gt;
+ * 医生隶属于科室，创建时校验科室是否存在；列表查询返回 DoctorVO（含科室名称）
+ */
+@RestController
+@RequestMapping("/api/doctors")
+@RequiredArgsConstructor
+public class DoctorController {
+
+    private final DoctorService doctorService;
+
+    /** 医生列表 — 可按科室ID筛选，返回含科室名的 VO */
+    @GetMapping
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;List&lt;DoctorVO&gt;&gt; list(@RequestParam(required = false) Long deptId) {
+        return Result.ok(doctorService.findDoctorVOList(deptId));
+    }
+
+    @GetMapping("/{id}")
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;Doctor&gt; detail(@PathVariable Long id) {
+        return Result.ok(doctorService.findById(id));
+    }
+
+    @PostMapping
+    @RequireRole("admin")
+    public Result&lt;Doctor&gt; create(@Valid @RequestBody Doctor doctor) {
+        return Result.ok(doctorService.create(doctor));
+    }
+
+    @PutMapping("/{id}")
+    @RequireRole("admin")
+    public Result&lt;Doctor&gt; update(@PathVariable Long id, @Valid @RequestBody Doctor doctor) {
+        return Result.ok(doctorService.update(id, doctor));
+    }
+
+    @DeleteMapping("/{id}")
+    @RequireRole("admin")
+    public Result&lt;Void&gt; delete(@PathVariable Long id) {
+        doctorService.delete(id);
+        return Result.ok();
+    }
+}
+</code></pre>
+<h2>【第 5 个类】类名：MedicalRecordController</h2>
+<p class="meta">所属层：Controller 控制器层 &nbsp;|&nbsp; 包路径：com.medicare.controller &nbsp;|&nbsp; 文件名：MedicalRecordController.java</p>
+<pre><code>
+package com.medicare.controller;
+
+import com.medicare.auth.RequireRole;
+import com.medicare.dto.MedicalRecordVO;
+import com.medicare.dto.Result;
+import com.medicare.entity.MedicalRecord;
+import com.medicare.service.MedicalRecordService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 病历控制器 — 医生工作站写病历
+ * &lt;p&gt;
+ * 业务流程：叫号后 → 创建病历(POST) → 查看/编辑病历 → 开处方
+ * 一个挂号只能对应一份病历（1:1 关系，由 Service 层做唯一性校验）
+ */
+@RestController
+@RequestMapping("/api/medical-records")
+@RequiredArgsConstructor
+public class MedicalRecordController {
+
+    private final MedicalRecordService medicalRecordService;
+
+    /** 病历列表查询（支持按患者ID或挂号ID筛选） */
+    @GetMapping
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;List&lt;MedicalRecordVO&gt;&gt; list(
+            @RequestParam(required = false) Long patientId,
+            @RequestParam(required = false) Long registrationId) {
+        return Result.ok(medicalRecordService.findRecordVOList(patientId, registrationId));
+    }
+
+    /** 病历详情（按ID查询，返回含关联名称的 VO） */
+    @GetMapping("/{id}")
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;MedicalRecordVO&gt; detail(@PathVariable Long id) {
+        return Result.ok(medicalRecordService.findRecordVOById(id));
+    }
+
+    /** 按挂号ID查询病历（医生工作站：叫号后查看该挂号的病历） */
+    @GetMapping("/by-registration/{registrationId}")
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;MedicalRecordVO&gt; getByRegistration(@PathVariable Long registrationId) {
+        return Result.ok(medicalRecordService.findRecordVOByRegistrationId(registrationId));
+    }
+
+    /** 创建病历 — 同一挂号不允许重复创建 */
+    @PostMapping
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;MedicalRecord&gt; create(@Valid @RequestBody MedicalRecord record) {
+        return Result.ok(medicalRecordService.create(record));
+    }
+
+    /** 更新病历 — 仅允许修改主诉、现病史、既往史、体格检查、诊断、医嘱 */
+    @PutMapping("/{id}")
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;MedicalRecord&gt; update(@PathVariable Long id, @Valid @RequestBody MedicalRecord record) {
+        return Result.ok(medicalRecordService.update(id, record));
+    }
+}
+</code></pre>
+<h2>【第 6 个类】类名：MedicineController</h2>
+<p class="meta">所属层：Controller 控制器层 &nbsp;|&nbsp; 包路径：com.medicare.controller &nbsp;|&nbsp; 文件名：MedicineController.java</p>
+<pre><code>
+package com.medicare.controller;
+
+import com.medicare.auth.RequireRole;
+import com.medicare.dto.*;
+import com.medicare.entity.Medicine;
+import com.medicare.service.MedicineService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 药品控制器 — 药品 CRUD + 库存管理（入库/出库/库存预警）
+ * &lt;p&gt;
+ * 入库流程：增加库存 + 记录库存日志（含批次号、有效期）
+ * 出库流程：安全扣减库存（WHERE stock &gt;= qty 防超卖） + 记录库存日志
+ */
+@RestController
+@RequestMapping("/api/medicines")
+@RequiredArgsConstructor
+public class MedicineController {
+
+    private final MedicineService medicineService;
+
+    /** 药品列表（支持关键词模糊搜索，无关键词时返回全部启用状态药品） */
+    @GetMapping
+    @RequireRole({"admin", "doctor", "pharmacist"})
+    public Result&lt;List&lt;Medicine&gt;&gt; list(@RequestParam(required = false) String keyword) {
+        if (keyword != null &amp;&amp; !keyword.isBlank()) {
+            return Result.ok(medicineService.search(keyword));
+        }
+        return Result.ok(medicineService.findAll());
+    }
+
+    /** 库存预警 — 查询库存低于安全存量的药品 */
+    @GetMapping("/low-stock")
+    @RequireRole({"admin", "pharmacist"})
+    public Result&lt;List&lt;Medicine&gt;&gt; lowStock() {
+        return Result.ok(medicineService.findLowStock());
+    }
+
+    @GetMapping("/{id}")
+    @RequireRole({"admin", "doctor", "pharmacist"})
+    public Result&lt;Medicine&gt; detail(@PathVariable Long id) {
+        return Result.ok(medicineService.findById(id));
+    }
+
+    @PostMapping
+    @RequireRole({"admin", "pharmacist"})
+    public Result&lt;Medicine&gt; create(@Valid @RequestBody Medicine medicine) {
+        return Result.ok(medicineService.create(medicine));
+    }
+
+    @PutMapping("/{id}")
+    @RequireRole({"admin", "pharmacist"})
+    public Result&lt;Medicine&gt; update(@PathVariable Long id, @Valid @RequestBody Medicine medicine) {
+        return Result.ok(medicineService.update(id, medicine));
+    }
+
+    @DeleteMapping("/{id}")
+    @RequireRole("admin")
+    public Result&lt;Void&gt; delete(@PathVariable Long id) {
+        medicineService.delete(id);
+        return Result.ok();
+    }
+
+    /** 入库 — 增加库存 + 记录日志（含批次号、有效期） */
+    @PostMapping("/{id}/stock-in")
+    @RequireRole({"admin", "pharmacist"})
+    public Result&lt;Void&gt; stockIn(@PathVariable Long id, @Valid @RequestBody StockRequest request) {
+        medicineService.stockIn(id, request.getQuantity(), request.getBatchNo(),
+                request.getExpiryDate(), request.getOperator(), request.getRemark());
+        return Result.ok();
+    }
+
+    /** 出库 — 安全扣减库存（防超卖）+ 记录日志 */
+    @PostMapping("/{id}/stock-out")
+    @RequireRole({"admin", "pharmacist"})
+    public Result&lt;Void&gt; stockOut(@PathVariable Long id, @Valid @RequestBody StockRequest request) {
+        medicineService.stockOut(id, request.getQuantity(), request.getBatchNo(),
+                request.getExpiryDate(), request.getOperator(), request.getRemark());
+        return Result.ok();
+    }
+}
+</code></pre>
+<h2>【第 7 个类】类名：PatientController</h2>
+<p class="meta">所属层：Controller 控制器层 &nbsp;|&nbsp; 包路径：com.medicare.controller &nbsp;|&nbsp; 文件名：PatientController.java</p>
+<pre><code>
+package com.medicare.controller;
+
+import com.medicare.auth.RequireRole;
+import com.medicare.dto.Result;
+import com.medicare.entity.Patient;
+import com.medicare.service.PatientService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 患者控制器 — 患者 CRUD + 搜索
+ * &lt;p&gt;
+ * 患者是挂号的前置依赖，身份证号唯一；删除前需确认无关联挂号记录
+ */
+@RestController
+@RequestMapping("/api/patients")
+@RequiredArgsConstructor
+public class PatientController {
+
+    private final PatientService patientService;
+
+    /** 查询全部患者列表 */
+    @GetMapping
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;List&lt;Patient&gt;&gt; list() {
+        return Result.ok(patientService.findAll());
+    }
+
+    /** 模糊搜索 — 按姓名/身份证号/手机号匹配 */
+    @GetMapping("/search")
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;List&lt;Patient&gt;&gt; search(@RequestParam String keyword) {
+        return Result.ok(patientService.search(keyword));
+    }
+
+    @GetMapping("/{id}")
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;Patient&gt; detail(@PathVariable Long id) {
+        return Result.ok(patientService.findById(id));
+    }
+
+    /** 创建患者 — 身份证号唯一性校验 */
+    @PostMapping
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;Patient&gt; create(@Valid @RequestBody Patient patient) {
+        return Result.ok(patientService.create(patient));
+    }
+
+    /** 更新患者 — 身份证号唯一性校验（排除自身） */
+    @PutMapping("/{id}")
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;Patient&gt; update(@PathVariable Long id, @Valid @RequestBody Patient patient) {
+        return Result.ok(patientService.update(id, patient));
+    }
+
+    @DeleteMapping("/{id}")
+    @RequireRole("admin")
+    public Result&lt;Void&gt; delete(@PathVariable Long id) {
+        patientService.delete(id);
+        return Result.ok();
+    }
+}
+</code></pre>
+<h2>【第 8 个类】类名：PaymentController</h2>
+<p class="meta">所属层：Controller 控制器层 &nbsp;|&nbsp; 包路径：com.medicare.controller &nbsp;|&nbsp; 文件名：PaymentController.java</p>
+<pre><code>
+package com.medicare.controller;
+
+import com.medicare.auth.RequireRole;
+import com.medicare.dto.CreatePaymentRequest;
+import com.medicare.dto.PaymentVO;
+import com.medicare.dto.Result;
+import com.medicare.entity.Payment;
+import com.medicare.service.PaymentService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/payments")
+@RequiredArgsConstructor
+public class PaymentController {
+
+    private final PaymentService paymentService;
+
+    @GetMapping
+    @RequireRole({"admin"})
+    public Result&lt;List&lt;PaymentVO&gt;&gt; list(@RequestParam(required = false) Long patientId,
+                                         @RequestParam(required = false) Integer status) {
+        return Result.ok(paymentService.list(patientId, status));
+    }
+
+    @GetMapping("/{id}")
+    @RequireRole({"admin"})
+    public Result&lt;Payment&gt; getById(@PathVariable Long id) {
+        return Result.ok(paymentService.getById(id));
+    }
+
+    @PostMapping
+    @RequireRole({"admin"})
+    public Result&lt;Payment&gt; create(@Valid @RequestBody CreatePaymentRequest request) {
+        return Result.ok(paymentService.create(request));
+    }
+
+    @PutMapping("/{id}/pay")
+    @RequireRole({"admin"})
+    public Result&lt;Void&gt; pay(@PathVariable Long id) {
+        paymentService.pay(id);
+        return Result.ok();
+    }
+
+    @PutMapping("/{id}/refund")
+    @RequireRole({"admin"})
+    public Result&lt;Void&gt; refund(@PathVariable Long id) {
+        paymentService.refund(id);
+        return Result.ok();
+    }
+}
+</code></pre>
+<h2>【第 9 个类】类名：PrescriptionController</h2>
+<p class="meta">所属层：Controller 控制器层 &nbsp;|&nbsp; 包路径：com.medicare.controller &nbsp;|&nbsp; 文件名：PrescriptionController.java</p>
+<pre><code>
+package com.medicare.controller;
+
+import com.medicare.auth.RequireRole;
+import com.medicare.dto.InventoryLogVO;
+import com.medicare.dto.PrescriptionCreateRequest;
+import com.medicare.dto.PrescriptionListVO;
+import com.medicare.dto.PrescriptionVO;
+import com.medicare.dto.Result;
+import com.medicare.entity.Prescription;
+import com.medicare.entity.PrescriptionItem;
+import com.medicare.service.PrescriptionService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 处方控制器 — 开处方 / 取药 / 作废处方 / 库存日志
+ * &lt;p&gt;
+ * 业务流程：医生开处方(POST) → 药房取药(PUT /{id}/dispense) 或 作废处方(PUT /{id}/cancel)
+ * &lt;p&gt;
+ * 处方状态码：0=待缴费  1=已缴费/待取药  2=已取药  3=已作废
+ * &lt;p&gt;
+ * 开处方时自动扣减药品库存（safeDecrementStock 原子操作防超卖）；
+ * 作废处方时逐条回滚库存并记录日志。
+ */
+@RestController
+@RequestMapping("/api/prescriptions")
+@RequiredArgsConstructor
+public class PrescriptionController {
+
+    private final PrescriptionService prescriptionService;
+
+    /** 处方列表查询（可按患者ID、是否今天筛选） */
+    @GetMapping
+    @RequireRole({"admin", "doctor", "pharmacist"})
+    public Result&lt;List&lt;PrescriptionListVO&gt;&gt; list(@RequestParam(required = false) Long patientId,
+                                            @RequestParam(required = false) Boolean today) {
+        return Result.ok(prescriptionService.listPrescriptionVOs(patientId, today));
+    }
+
+    /** 处方详情 — 含明细项和关联的药品名称/规格/单位 */
+    @GetMapping("/{id}")
+    @RequireRole({"admin", "doctor", "pharmacist"})
+    public Result&lt;PrescriptionVO&gt; detail(@PathVariable Long id) {
+        return Result.ok(prescriptionService.findPrescriptionVOById(id));
+    }
+
+    /** 按病历ID查询处方（医生工作站：写完病历后查看对应处方） */
+    @GetMapping("/by-record/{recordId}")
+    @RequireRole({"admin", "doctor", "pharmacist"})
+    public Result&lt;PrescriptionVO&gt; byRecord(@PathVariable Long recordId) {
+        return Result.ok(prescriptionService.findByRecordId(recordId));
+    }
+
+    /**
+     * 开立处方 — 事务操作：保存处方主表 + 逐条扣减库存 + 记录库存日志 + 保存明细项
+     * 请求体使用 PrescriptionCreateRequest DTO 做参数校验，替代不安全的 Map
+     */
+    @PostMapping
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;Prescription&gt; create(@Valid @RequestBody PrescriptionCreateRequest request) {
+        PrescriptionCreateRequest.PrescriptionInfo info = request.getPrescription();
+        Prescription prescription = new Prescription();
+        prescription.setRecordId(info.getRecordId());
+        prescription.setPatientId(info.getPatientId());
+        prescription.setDoctorId(info.getDoctorId());
+
+        List&lt;PrescriptionItem&gt; items = request.getItems().stream().map(itemInfo -&gt; {
+            PrescriptionItem item = new PrescriptionItem();
+            item.setMedicineId(itemInfo.getMedicineId());
+            item.setQuantity(itemInfo.getQuantity());
+            item.setDosage(itemInfo.getDosage());
+            item.setUsageDesc(itemInfo.getUsageDesc());
+            item.setUnitPrice(itemInfo.getUnitPrice());
+            return item;
+        }).toList();
+
+        return Result.ok(prescriptionService.createPrescription(prescription, items));
+    }
+
+    /** 取药 — 药房确认发药，处方状态→已取药 */
+    @PutMapping("/{id}/dispense")
+    @RequireRole({"admin", "pharmacist"})
+    public Result&lt;Void&gt; dispense(@PathVariable Long id) {
+        prescriptionService.dispense(id);
+        return Result.ok();
+    }
+
+    /** 作废处方 — 逐条回滚库存 + 记录日志 + 更新处方状态 */
+    @PutMapping("/{id}/cancel")
+    @RequireRole({"admin", "pharmacist"})
+    public Result&lt;Void&gt; cancel(@PathVariable Long id) {
+        prescriptionService.cancelPrescription(id);
+        return Result.ok();
+    }
+
+    /** 库存变动日志查询（可按药品ID筛选） */
+    @GetMapping("/inventory-logs")
+    @RequireRole({"admin", "pharmacist"})
+    public Result&lt;List&lt;InventoryLogVO&gt;&gt; inventoryLogs(@RequestParam(required = false) Long medicineId) {
+        return Result.ok(prescriptionService.findInventoryLogVOList(medicineId));
+    }
+}
+</code></pre>
+<h2>【第 10 个类】类名：RegistrationController</h2>
+<p class="meta">所属层：Controller 控制器层 &nbsp;|&nbsp; 包路径：com.medicare.controller &nbsp;|&nbsp; 文件名：RegistrationController.java</p>
+<pre><code>
+package com.medicare.controller;
+
+import com.medicare.auth.RequireRole;
+import com.medicare.dto.RegistrationVO;
+import com.medicare.dto.Result;
+import com.medicare.entity.Registration;
+import com.medicare.service.RegistrationService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 挂号控制器 — 挂号预约核心流程
+ * &lt;p&gt;
+ * 业务流程：管理员挂号(POST) → 叫号(PUT /{id}/call, 状态0→1) → 完成就诊(PUT /{id}/complete, 状态1→2)
+ *                    └→ 取消挂号(DELETE /{id}, 状态→已取消 + 回增号源)
+ * &lt;p&gt;
+ * 挂号状态码：0=候诊  1=就诊中  2=已完成  3=已取消
+ */
+@RestController
+@RequestMapping("/api/registrations")
+@RequiredArgsConstructor
+public class RegistrationController {
+
+    private final RegistrationService registrationService;
+
+    /** 查询今日挂号列表（可按日期、状态筛选，默认今天） */
+    @GetMapping
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;List&lt;RegistrationVO&gt;&gt; list(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) Integer status) {
+        if (date == null) date = LocalDate.now();
+        return Result.ok(registrationService.findTodayList(date, status));
+    }
+
+    /**
+     * 挂号 — 原子扣减号源 + 保存挂号记录 + 从 schedule 复制 doctorId
+     * 事务保证：号源扣减与挂号记录保存在同一事务内，防止超卖
+     */
+    @PostMapping
+    @RequireRole("admin")
+    public Result&lt;Registration&gt; register(@RequestBody Map&lt;String, Long&gt; body) {
+        Long patientId = body.get("patientId");
+        Long scheduleId = body.get("scheduleId");
+        return Result.ok(registrationService.register(patientId, scheduleId));
+    }
+
+    /** 叫号 — 挂号状态 0(候诊) → 1(就诊中) */
+    @PutMapping("/{id}/call")
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;Void&gt; callPatient(@PathVariable Long id) {
+        registrationService.callPatient(id);
+        return Result.ok();
+    }
+
+    /** 完成就诊 — 挂号状态 1(就诊中) → 2(已完成) */
+    @PutMapping("/{id}/complete")
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;Void&gt; complete(@PathVariable Long id) {
+        registrationService.completeRegistration(id);
+        return Result.ok();
+    }
+
+    /** 取消挂号 — 状态→已取消 + 事务内回增号源 */
+    @DeleteMapping("/{id}")
+    @RequireRole("admin")
+    public Result&lt;Void&gt; cancel(@PathVariable Long id) {
+        registrationService.cancelRegistration(id);
+        return Result.ok();
+    }
+}
+</code></pre>
+<h2>【第 11 个类】类名：ScheduleController</h2>
+<p class="meta">所属层：Controller 控制器层 &nbsp;|&nbsp; 包路径：com.medicare.controller &nbsp;|&nbsp; 文件名：ScheduleController.java</p>
+<pre><code>
+package com.medicare.controller;
+
+import com.medicare.auth.RequireRole;
+import com.medicare.dto.Result;
+import com.medicare.dto.ScheduleVO;
+import com.medicare.entity.Schedule;
+import com.medicare.service.ScheduleService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
+
+/**
+ * 排班控制器 — 排班 CRUD + 可用号源查询
+ * &lt;p&gt;
+ * 排班是挂号的前置依赖，包含日期、时段、总号源、剩余号源；
+ * 创建时自动将剩余号源设为总号源数；挂号时原子扣减剩余号源
+ */
+@RestController
+@RequestMapping("/api/schedules")
+@RequiredArgsConstructor
+public class ScheduleController {
+
+    private final ScheduleService scheduleService;
+
+    /** 排班列表 — 可按日期、科室筛选，返回含医生名/科室名的 VO */
+    @GetMapping
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;List&lt;ScheduleVO&gt;&gt; list(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) Long deptId) {
+        return Result.ok(scheduleService.findScheduleVOList(date, deptId));
+    }
+
+    /** 可用号源 — 仅返回剩余号源 &gt; 0 的排班（供挂号选择） */
+    @GetMapping("/available")
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;List&lt;ScheduleVO&gt;&gt; available(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) Long deptId) {
+        return Result.ok(scheduleService.findAvailableSchedules(date, deptId));
+    }
+
+    @GetMapping("/{id}")
+    @RequireRole({"admin", "doctor"})
+    public Result&lt;Schedule&gt; detail(@PathVariable Long id) {
+        return Result.ok(scheduleService.findById(id));
+    }
+
+    /** 创建排班 — 校验医生存在 + 自动初始化剩余号源 */
+    @PostMapping
+    @RequireRole("admin")
+    public Result&lt;Schedule&gt; create(@Valid @RequestBody Schedule schedule) {
+        return Result.ok(scheduleService.create(schedule));
+    }
+
+    @PutMapping("/{id}")
+    @RequireRole("admin")
+    public Result&lt;Schedule&gt; update(@PathVariable Long id, @Valid @RequestBody Schedule schedule) {
+        return Result.ok(scheduleService.update(id, schedule));
+    }
+
+    @DeleteMapping("/{id}")
+    @RequireRole("admin")
+    public Result&lt;Void&gt; delete(@PathVariable Long id) {
+        scheduleService.delete(id);
+        return Result.ok();
+    }
+}
+</code></pre>
+<h2>【第 12 个类】类名：UserController</h2>
+<p class="meta">所属层：Controller 控制器层 &nbsp;|&nbsp; 包路径：com.medicare.controller &nbsp;|&nbsp; 文件名：UserController.java</p>
+<pre><code>
+package com.medicare.controller;
+
+import com.medicare.auth.AuthInterceptor;
+import com.medicare.auth.RequireRole;
+import com.medicare.dto.ChangePasswordRequest;
+import com.medicare.dto.Result;
+import com.medicare.entity.SysUser;
+import com.medicare.service.SysUserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+/**
+ * 用户管理控制器 — 系统用户 CRUD + 修改密码
+ * &lt;p&gt;
+ * 用户角色：admin / doctor / pharmacist；创建时密码经 BCrypt 加密后存储；
+ * 修改密码限制只能改自己的，需要验证旧密码
+ */
+@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final SysUserService sysUserService;
+
+    /** 用户列表 — 返回所有用户（密码置空） */
+    @GetMapping
+    @RequireRole("admin")
+    public Result&lt;List&lt;SysUser&gt;&gt; list() {
+        List&lt;SysUser&gt; users = sysUserService.findAll();
+        users.forEach(u -&gt; u.setPassword(null));
+        return Result.ok(users);
+    }
+
+    /** 创建用户 — 密码 BCrypt 加密 + 用户名唯一性校验 */
+    @PostMapping
+    @RequireRole("admin")
+    public Result&lt;SysUser&gt; create(@Valid @RequestBody SysUser user) {
+        SysUser created = sysUserService.create(user);
+        created.setPassword(null);
+        return Result.ok(created);
+    }
+
+    @PutMapping("/{id}")
+    @RequireRole("admin")
+    public Result&lt;SysUser&gt; update(@PathVariable Long id, @Valid @RequestBody SysUser user) {
+        SysUser updated = sysUserService.update(id, user);
+        updated.setPassword(null);
+        return Result.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    @RequireRole("admin")
+    public Result&lt;Void&gt; delete(@PathVariable Long id) {
+        sysUserService.delete(id);
+        return Result.ok();
+    }
+
+    /** 修改密码 — 只能改自己的密码，需验证旧密码 */
+    @PutMapping("/{id}/password")
+    public Result&lt;Void&gt; changePassword(@PathVariable Long id,
+                                       @Valid @RequestBody ChangePasswordRequest request,
+                                       HttpServletRequest httpRequest) {
+        // 只能改自己的密码
+        SysUser currentUser = AuthInterceptor.getCurrentUser(httpRequest);
+        if (currentUser == null || !currentUser.getId().equals(id)) {
+            return Result.error(403, "只能修改自己的密码");
+        }
+        sysUserService.changePassword(id, request.getOldPassword(), request.getNewPassword());
+        return Result.ok();
+    }
+}
+</code></pre>
+</body></html>

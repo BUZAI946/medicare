@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: medicare
+    runtime: java
+    buildCommand: cd medicare-server && mvn clean package -DskipTests
+    startCommand: cd medicare-server && java -Xmx512m -jar target/medicare-server-1.0.0-SNAPSHOT.jar --spring.profiles.active=render
+    envVars:
+      - key: JAVA_VERSION
+        value: 17

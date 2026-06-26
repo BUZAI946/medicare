@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>MediCare Entity 实体层 代码</title>
+<style>
+body { font-family: 'Segoe UI','Microsoft YaHei',sans-serif; margin: 40px; background: #fff; color: #1a1a2e; }
+h1 { text-align: center; color: #667eea; border-bottom: 3px solid #667eea; padding-bottom: 12px; font-size: 22px; }
+h2 { color: #764ba2; margin-top: 48px; padding: 10px 16px; background: #f5f3ff; border-left: 5px solid #667eea; border-radius: 4px; font-size: 16px; }
+.meta { color: #909399; font-size: 13px; margin-top: 4px; margin-bottom: 12px; }
+pre { background: #f8f9fb; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; overflow-x: auto; font-size: 12px; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; }
+code { font-family: 'Consolas','Courier New',monospace; font-size: 11px; }
+</style>
+</head>
+<body>
+<h1>MediCare 智慧医疗管理系统<br>Entity 实体层 全部代码导出</h1>
+<p style="text-align:center;color:#909399;">共 12 个类 | 导出时间：2026-06-25 23:54:11</p>
+<h2>【第 1 个类】类名：Department</h2>
+<p class="meta">所属层：Entity 实体层 &nbsp;|&nbsp; 包路径：com.medicare.entity &nbsp;|&nbsp; 文件名：Department.java</p>
+<pre><code>
+package com.medicare.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDateTime;
+
+/**
+ * 科室实体
+ */
+@Data
+@Entity
+@Table(name = "department")
+public class Department {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 50)
+    private String name;
+
+    @Column(length = 100)
+    private String location;
+
+    @Column(length = 20)
+    private String phone;
+
+    @Column(name = "create_time", updatable = false, insertable = false)
+    private LocalDateTime createTime;
+
+    @Column(name = "update_time", insertable = false, updatable = false)
+    private LocalDateTime updateTime;
+}
+</code></pre>
+<h2>【第 2 个类】类名：Doctor</h2>
+<p class="meta">所属层：Entity 实体层 &nbsp;|&nbsp; 包路径：com.medicare.entity &nbsp;|&nbsp; 文件名：Doctor.java</p>
+<pre><code>
+package com.medicare.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDateTime;
+
+/**
+ * 医生实体
+ */
+@Data
+@Entity
+@Table(name = "doctor")
+public class Doctor {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 50)
+    private String name;
+
+    @Column(name = "department_id", nullable = false)
+    private Long departmentId;
+
+    @Column(length = 30)
+    private String title;
+
+    @Column(nullable = false)
+    private Integer status = 1;
+
+    @Column(name = "create_time", updatable = false, insertable = false)
+    private LocalDateTime createTime;
+
+    @Column(name = "update_time", insertable = false, updatable = false)
+    private LocalDateTime updateTime;
+}
+</code></pre>
+<h2>【第 3 个类】类名：InventoryLog</h2>
+<p class="meta">所属层：Entity 实体层 &nbsp;|&nbsp; 包路径：com.medicare.entity &nbsp;|&nbsp; 文件名：InventoryLog.java</p>
+<pre><code>
+package com.medicare.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+/**
+ * 库存变动日志实体
+ */
+@Data
+@Entity
+@Table(name = "inventory_log")
+public class InventoryLog {
+
+    public static final int TYPE_STOCK_IN = 1;   // 入库
+    public static final int TYPE_STOCK_OUT = 2;   // 出库
+    public static final int TYPE_SURPLUS = 3;     // 盘盈
+    public static final int TYPE_LOSS = 4;        // 盘亏
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "medicine_id", nullable = false)
+    private Long medicineId;
+
+    @Column(nullable = false)
+    private Integer type;
+
+    @Column(nullable = false)
+    private Integer quantity = 0;
+
+    @Column(name = "batch_no", length = 50)
+    private String batchNo;
+
+    @Column(name = "expiry_date")
+    private LocalDate expiryDate;
+
+    @Column(length = 50)
+    private String operator;
+
+    @Column(length = 500)
+    private String remark;
+
+    @Column(name = "log_time", updatable = false, insertable = false)
+    private LocalDateTime logTime;
+}
+</code></pre>
+<h2>【第 4 个类】类名：MedicalRecord</h2>
+<p class="meta">所属层：Entity 实体层 &nbsp;|&nbsp; 包路径：com.medicare.entity &nbsp;|&nbsp; 文件名：MedicalRecord.java</p>
+<pre><code>
+package com.medicare.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDateTime;
+
+/**
+ * 病历实体
+ */
+@Data
+@Entity
+@Table(name = "medical_record")
+public class MedicalRecord {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "registration_id", nullable = false)
+    private Long registrationId;
+
+    @Column(name = "patient_id", nullable = false)
+    private Long patientId;
+
+    @Column(name = "doctor_id", nullable = false)
+    private Long doctorId;
+
+    @Column(name = "chief_complaint", length = 500)
+    private String chiefComplaint;
+
+    @Column(name = "present_illness", columnDefinition = "TEXT")
+    private String presentIllness;
+
+    @Column(name = "past_history", length = 1000)
+    private String pastHistory;
+
+    @Column(name = "physical_exam", length = 1000)
+    private String physicalExam;
+
+    @Column(length = 500)
+    private String diagnosis;
+
+    @Column(length = 1000)
+    private String advice;
+
+    @Column(name = "create_time", updatable = false, insertable = false)
+    private LocalDateTime createTime;
+
+    @Column(name = "update_time", insertable = false, updatable = false)
+    private LocalDateTime updateTime;
+}
+</code></pre>
+<h2>【第 5 个类】类名：Medicine</h2>
+<p class="meta">所属层：Entity 实体层 &nbsp;|&nbsp; 包路径：com.medicare.entity &nbsp;|&nbsp; 文件名：Medicine.java</p>
+<pre><code>
+package com.medicare.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+/**
+ * 药品实体
+ */
+@Data
+@Entity
+@Table(name = "medicine")
+public class Medicine {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String name;
+
+    @Column(length = 100)
+    private String spec;
+
+    @Column(length = 20)
+    private String unit;
+
+    @Column(nullable = false)
+    private Integer stock = 0;
+
+    @Column(name = "safety_stock", nullable = false)
+    private Integer safetyStock = 10;
+
+    @Column(name = "expiry_date")
+    private LocalDate expiryDate;
+
+    @Column(name = "batch_no", length = 50)
+    private String batchNo;
+
+    @Column(name = "pinyin_code", length = 50)
+    private String pinyinCode;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal price = BigDecimal.ZERO;
+
+    @Column(length = 200)
+    private String manufacturer;
+
+    @Column(nullable = false)
+    private Integer status = 1;
+
+    @Column(name = "create_time", updatable = false, insertable = false)
+    private LocalDateTime createTime;
+
+    @Column(name = "update_time", insertable = false, updatable = false)
+    private LocalDateTime updateTime;
+}
+</code></pre>
+<h2>【第 6 个类】类名：Patient</h2>
+<p class="meta">所属层：Entity 实体层 &nbsp;|&nbsp; 包路径：com.medicare.entity &nbsp;|&nbsp; 文件名：Patient.java</p>
+<pre><code>
+package com.medicare.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+/**
+ * 患者实体
+ */
+@Data
+@Entity
+@Table(name = "patient")
+public class Patient {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "id_card", nullable = false, length = 18)
+    private String idCard;
+
+    @Column(nullable = false, length = 50)
+    private String name;
+
+    @Column(nullable = false)
+    private Integer gender;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    @Column(length = 20)
+    private String phone;
+
+    @Column(length = 200)
+    private String address;
+
+    @Column(name = "allergy_info", length = 500)
+    private String allergyInfo;
+
+    @Column(name = "create_time", updatable = false, insertable = false)
+    private LocalDateTime createTime;
+
+    @Column(name = "update_time", insertable = false, updatable = false)
+    private LocalDateTime updateTime;
+}
+</code></pre>
+<h2>【第 7 个类】类名：Payment</h2>
+<p class="meta">所属层：Entity 实体层 &nbsp;|&nbsp; 包路径：com.medicare.entity &nbsp;|&nbsp; 文件名：Payment.java</p>
+<pre><code>
+package com.medicare.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Data
+@Entity
+@Table(name = "payment")
+public class Payment {
+
+    public static final int STATUS_PENDING = 0;
+    public static final int STATUS_PAID = 1;
+    public static final int STATUS_REFUNDED = 2;
+
+    public static final String METHOD_CASH = "CASH";
+    public static final String METHOD_WECHAT = "WECHAT";
+    public static final String METHOD_ALIPAY = "ALIPAY";
+    public static final String METHOD_CARD = "CARD";
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "registration_id")
+    private Long registrationId;
+
+    @Column(name = "prescription_id")
+    private Long prescriptionId;
+
+    @Column(name = "patient_id", nullable = false)
+    private Long patientId;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal amount;
+
+    @Column(name = "payment_method")
+    private String paymentMethod;
+
+    private Integer status;
+
+    private String remark;
+
+    @Column(name = "create_time", updatable = false, insertable = false)
+    private LocalDateTime createTime;
+
+    @Column(name = "update_time", insertable = false, updatable = false)
+    private LocalDateTime updateTime;
+
+    public static String getStatusText(Integer status) {
+        if (status == null) return "未知";
+        return switch (status) {
+            case STATUS_PENDING -&gt; "待缴费";
+            case STATUS_PAID -&gt; "已缴费";
+            case STATUS_REFUNDED -&gt; "已退款";
+            default -&gt; "未知";
+        };
+    }
+
+    public static String getMethodText(String method) {
+        if (method == null) return "未知";
+        return switch (method) {
+            case METHOD_CASH -&gt; "现金";
+            case METHOD_WECHAT -&gt; "微信";
+            case METHOD_ALIPAY -&gt; "支付宝";
+            case METHOD_CARD -&gt; "银行卡";
+            default -&gt; method;
+        };
+    }
+}
+</code></pre>
+<h2>【第 8 个类】类名：Prescription</h2>
+<p class="meta">所属层：Entity 实体层 &nbsp;|&nbsp; 包路径：com.medicare.entity &nbsp;|&nbsp; 文件名：Prescription.java</p>
+<pre><code>
+package com.medicare.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+/**
+ * 处方实体
+ */
+@Data
+@Entity
+@Table(name = "prescription")
+public class Prescription {
+
+    public static final int STATUS_PENDING = 0;   // 待缴费
+    public static final int STATUS_PAID = 1;       // 已缴费
+    public static final int STATUS_DISPENSED = 2;  // 已取药
+    public static final int STATUS_CANCELLED = 3;  // 已作废
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "record_id", nullable = false)
+    private Long recordId;
+
+    @Column(name = "patient_id", nullable = false)
+    private Long patientId;
+
+    @Column(name = "doctor_id", nullable = false)
+    private Long doctorId;
+
+    @Column(name = "total_amount", precision = 10, scale = 2)
+    private BigDecimal totalAmount = BigDecimal.ZERO;
+
+    @Column(nullable = false)
+    private Integer status = 0;
+
+    @Column(name = "create_time", updatable = false, insertable = false)
+    private LocalDateTime createTime;
+
+    @Column(name = "update_time", insertable = false, updatable = false)
+    private LocalDateTime updateTime;
+}
+</code></pre>
+<h2>【第 9 个类】类名：PrescriptionItem</h2>
+<p class="meta">所属层：Entity 实体层 &nbsp;|&nbsp; 包路径：com.medicare.entity &nbsp;|&nbsp; 文件名：PrescriptionItem.java</p>
+<pre><code>
+package com.medicare.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+/**
+ * 处方明细实体
+ */
+@Data
+@Entity
+@Table(name = "prescription_item")
+public class PrescriptionItem {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "prescription_id", nullable = false)
+    private Long prescriptionId;
+
+    @Column(name = "medicine_id", nullable = false)
+    private Long medicineId;
+
+    @Column(nullable = false)
+    private Integer quantity = 1;
+
+    @Column(length = 200)
+    private String dosage;
+
+    @Column(name = "usage_desc", length = 200)
+    private String usageDesc;
+
+    @Column(name = "unit_price", precision = 10, scale = 2, nullable = false)
+    private BigDecimal unitPrice = BigDecimal.ZERO;
+
+    @Column(precision = 10, scale = 2, nullable = false)
+    private BigDecimal amount = BigDecimal.ZERO;
+
+    @Column(name = "create_time", updatable = false, insertable = false)
+    private LocalDateTime createTime;
+}
+</code></pre>
+<h2>【第 10 个类】类名：Registration</h2>
+<p class="meta">所属层：Entity 实体层 &nbsp;|&nbsp; 包路径：com.medicare.entity &nbsp;|&nbsp; 文件名：Registration.java</p>
+<pre><code>
+package com.medicare.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+/**
+ * 挂号实体
+ * 修复：添加 doctorId 字段，原表缺少此字段，需 ALTER TABLE 添加
+ */
+@Data
+@Entity
+@Table(name = "registration")
+public class Registration {
+
+    public static final int STATUS_WAITING = 0;
+    public static final int STATUS_IN_PROGRESS = 1;
+    public static final int STATUS_COMPLETED = 2;
+    public static final int STATUS_CANCELLED = 3;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "patient_id", nullable = false)
+    private Long patientId;
+
+    @Column(name = "schedule_id", nullable = false)
+    private Long scheduleId;
+
+    /** 修复：添加 doctorId，原 registration 表无此列，需 DDL: ALTER TABLE registration ADD COLUMN doctor_id BIGINT UNSIGNED COMMENT '医生ID' AFTER schedule_id; */
+    @Column(name = "doctor_id")
+    private Long doctorId;
+
+    @Column(name = "reg_time", updatable = false, insertable = false)
+    private LocalDateTime regTime;
+
+    @Column(nullable = false)
+    private Integer status = 0;
+
+    @Column(name = "seq_no")
+    private Integer seqNo;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal fee = BigDecimal.ZERO;
+
+    @Column(name = "create_time", updatable = false, insertable = false)
+    private LocalDateTime createTime;
+
+    @Column(name = "update_time", insertable = false, updatable = false)
+    private LocalDateTime updateTime;
+
+    public static String getStatusText(Integer status) {
+        if (status == null) return "未知";
+        return switch (status) {
+            case STATUS_WAITING -&gt; "候诊";
+            case STATUS_IN_PROGRESS -&gt; "就诊中";
+            case STATUS_COMPLETED -&gt; "已完成";
+            case STATUS_CANCELLED -&gt; "已取消";
+            default -&gt; "未知";
+        };
+    }
+}
+</code></pre>
+<h2>【第 11 个类】类名：Schedule</h2>
+<p class="meta">所属层：Entity 实体层 &nbsp;|&nbsp; 包路径：com.medicare.entity &nbsp;|&nbsp; 文件名：Schedule.java</p>
+<pre><code>
+package com.medicare.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+/**
+ * 排班号源实体
+ */
+@Data
+@Entity
+@Table(name = "schedule")
+public class Schedule {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "doctor_id", nullable = false)
+    private Long doctorId;
+
+    @Column(name = "work_date", nullable = false)
+    private LocalDate workDate;
+
+    @Column(name = "time_slot", nullable = false, length = 20)
+    private String timeSlot;
+
+    @Column(name = "total_slots", nullable = false)
+    private Integer totalSlots = 0;
+
+    @Column(name = "remain_slots", nullable = false)
+    private Integer remainSlots = 0;
+
+    @Column(name = "create_time", updatable = false, insertable = false)
+    private LocalDateTime createTime;
+
+    @Column(name = "update_time", insertable = false, updatable = false)
+    private LocalDateTime updateTime;
+}
+</code></pre>
+<h2>【第 12 个类】类名：SysUser</h2>
+<p class="meta">所属层：Entity 实体层 &nbsp;|&nbsp; 包路径：com.medicare.entity &nbsp;|&nbsp; 文件名：SysUser.java</p>
+<pre><code>
+package com.medicare.entity;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.time.LocalDateTime;
+
+/**
+ * 系统用户实体
+ */
+@Data
+@Entity
+@Table(name = "sys_user")
+public class SysUser {
+
+    public static final String ROLE_ADMIN = "admin";
+    public static final String ROLE_DOCTOR = "doctor";
+    public static final String ROLE_PHARMACIST = "pharmacist";
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 50, unique = true)
+    private String username;
+
+    @Column(nullable = false, length = 100)
+    private String password;
+
+    @Column(name = "real_name", length = 50)
+    private String realName;
+
+    @Column(length = 20)
+    private String role = ROLE_DOCTOR;
+
+    @Column(nullable = false)
+    private Integer status = 1;
+
+    @Column(name = "doctor_id")
+    private Long doctorId;
+
+    @Column(name = "create_time", updatable = false, insertable = false)
+    private LocalDateTime createTime;
+
+    @Column(name = "update_time", insertable = false, updatable = false)
+    private LocalDateTime updateTime;
+
+    public boolean isAdmin() { return ROLE_ADMIN.equals(role); }
+    public boolean isDoctor() { return ROLE_DOCTOR.equals(role); }
+    public boolean isPharmacist() { return ROLE_PHARMACIST.equals(role); }
+}
+</code></pre>
+</body></html>

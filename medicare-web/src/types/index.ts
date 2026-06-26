@@ -180,6 +180,23 @@ export interface DashboardStats {
   todayRegCount: number
   waitingCount: number
   stockAlertCount: number
+  pendingPaymentCount: number
+  todayPaymentAmount: string
+}
+
+export interface Payment {
+  id?: number
+  registrationId?: number | null
+  prescriptionId?: number | null
+  patientId: number
+  amount: number
+  paymentMethod: string
+  status: number
+  remark?: string
+  patientName?: string
+  registrationType?: string
+  createTime?: string
+  updateTime?: string
 }
 
 // ========== 请求参数 ==========

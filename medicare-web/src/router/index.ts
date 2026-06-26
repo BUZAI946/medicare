@@ -65,6 +65,30 @@ const router = createRouter({
           meta: { title: '处方管理', icon: 'Notebook', roles: ['admin', 'doctor', 'pharmacist'] },
         },
         {
+          path: 'payments',
+          name: 'PaymentList',
+          component: () => import('../views/payment/PaymentView.vue'),
+          meta: { title: '收费管理', icon: 'Money', roles: ['admin'] },
+        },
+        {
+          path: 'calendar',
+          name: 'Calendar',
+          component: () => import('../views/calendar/CalendarView.vue'),
+          meta: { title: '预约日历', icon: 'Calendar', roles: ['admin', 'doctor'] },
+        },
+        {
+          path: 'reports',
+          name: 'Reports',
+          component: () => import('../views/reports/ReportsView.vue'),
+          meta: { title: '报表中心', icon: 'DataAnalysis', roles: ['admin'] },
+        },
+        {
+          path: 'datav',
+          name: 'DataV',
+          component: () => import('../views/datav/DataV.vue'),
+          meta: { title: '数据大屏', icon: 'Monitor', roles: ['admin', 'doctor', 'pharmacist'] },
+        },
+        {
           path: 'settings',
           name: 'Settings',
           component: () => import('../views/settings/SettingsView.vue'),

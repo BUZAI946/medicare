@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>MediCare Repository 数据访问层 代码</title>
+<style>
+body { font-family: 'Segoe UI','Microsoft YaHei',sans-serif; margin: 40px; background: #fff; color: #1a1a2e; }
+h1 { text-align: center; color: #667eea; border-bottom: 3px solid #667eea; padding-bottom: 12px; font-size: 22px; }
+h2 { color: #764ba2; margin-top: 48px; padding: 10px 16px; background: #f5f3ff; border-left: 5px solid #667eea; border-radius: 4px; font-size: 16px; }
+.meta { color: #909399; font-size: 13px; margin-top: 4px; margin-bottom: 12px; }
+pre { background: #f8f9fb; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; overflow-x: auto; font-size: 12px; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; }
+code { font-family: 'Consolas','Courier New',monospace; font-size: 11px; }
+</style>
+</head>
+<body>
+<h1>MediCare 智慧医疗管理系统<br>Repository 数据访问层 全部代码导出</h1>
+<p style="text-align:center;color:#909399;">共 12 个类 | 导出时间：2026-06-25 23:54:11</p>
+<h2>【第 1 个类】类名：DepartmentRepository</h2>
+<p class="meta">所属层：Repository 数据访问层 &nbsp;|&nbsp; 包路径：com.medicare.repository &nbsp;|&nbsp; 文件名：DepartmentRepository.java</p>
+<pre><code>
+package com.medicare.repository;
+
+import com.medicare.entity.Department;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface DepartmentRepository extends JpaRepository&lt;Department, Long&gt; {
+    boolean existsByName(String name);
+    boolean existsByNameAndIdNot(String name, Long id);
+}
+</code></pre>
+<h2>【第 2 个类】类名：DoctorRepository</h2>
+<p class="meta">所属层：Repository 数据访问层 &nbsp;|&nbsp; 包路径：com.medicare.repository &nbsp;|&nbsp; 文件名：DoctorRepository.java</p>
+<pre><code>
+package com.medicare.repository;
+
+import com.medicare.dto.DoctorVO;
+import com.medicare.entity.Doctor;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
+public interface DoctorRepository extends JpaRepository&lt;Doctor, Long&gt; {
+
+    List&lt;Doctor&gt; findByDepartmentIdAndStatus(Long departmentId, Integer status);
+
+    List&lt;Doctor&gt; findByStatus(Integer status);
+
+    /**
+     * 查询医生列表（带科室名称）
+     */
+    @Query(value = "SELECT d.id, d.name, d.department_id AS departmentId, d.title, d.status, d.create_time AS createTime, "
+            + "dep.name AS departmentName "
+            + "FROM doctor d LEFT JOIN department dep ON d.department_id = dep.id "
+            + "WHERE (:deptId IS NULL OR d.department_id = :deptId) "
+            + "ORDER BY d.id",
+            nativeQuery = true)
+    List&lt;DoctorVO&gt; findDoctorVOList(@Param("deptId") Long deptId);
+}
+</code></pre>
+<h2>【第 3 个类】类名：InventoryLogRepository</h2>
+<p class="meta">所属层：Repository 数据访问层 &nbsp;|&nbsp; 包路径：com.medicare.repository &nbsp;|&nbsp; 文件名：InventoryLogRepository.java</p>
+<pre><code>
+package com.medicare.repository;
+
+import com.medicare.dto.InventoryLogVO;
+import com.medicare.entity.InventoryLog;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
+public interface InventoryLogRepository extends JpaRepository&lt;InventoryLog, Long&gt; {
+
+    List&lt;InventoryLog&gt; findByMedicineIdOrderByLogTimeDesc(Long medicineId);
+
+    /**
+     * 查询库存日志（带药品名称）
+     */
+    @Query(value = "SELECT il.id, il.medicine_id AS medicineId, il.type, il.quantity, "
+            + "il.batch_no AS batchNo, il.expiry_date AS expiryDate, il.operator, il.remark, "
+            + "il.log_time AS logTime, m.name AS medicineName "
+            + "FROM inventory_log il LEFT JOIN medicine m ON il.medicine_id = m.id "
+            + "WHERE (:medicineId IS NULL OR il.medicine_id = :medicineId) "
+            + "ORDER BY il.log_time DESC",
+            nativeQuery = true)
+    List&lt;InventoryLogVO&gt; findLogVOList(@Param("medicineId") Long medicineId);
+}
+</code></pre>
+<h2>【第 4 个类】类名：MedicalRecordRepository</h2>
+<p class="meta">所属层：Repository 数据访问层 &nbsp;|&nbsp; 包路径：com.medicare.repository &nbsp;|&nbsp; 文件名：MedicalRecordRepository.java</p>
+<pre><code>
+package com.medicare.repository;
+
+import com.medicare.dto.MedicalRecordVO;
+import com.medicare.entity.MedicalRecord;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface MedicalRecordRepository extends JpaRepository&lt;MedicalRecord, Long&gt; {
+
+    Optional&lt;MedicalRecord&gt; findByRegistrationId(Long registrationId);
+
+    List&lt;MedicalRecord&gt; findByPatientIdOrderByCreateTimeDesc(Long patientId);
+
+    /**
+     * 查询病历列表（带患者+医生名称）
+     */
+    @Query(value = "SELECT mr.id, mr.registration_id AS registrationId, mr.patient_id AS patientId, "
+            + "mr.doctor_id AS doctorId, mr.chief_complaint AS chiefComplaint, mr.present_illness AS presentIllness, "
+            + "mr.past_history AS pastHistory, mr.physical_exam AS physicalExam, mr.diagnosis, mr.advice, "
+            + "mr.create_time AS createTime, "
+            + "p.name AS patientName, d.name AS doctorName "
+            + "FROM medical_record mr "
+            + "LEFT JOIN patient p ON mr.patient_id = p.id "
+            + "LEFT JOIN doctor d ON mr.doctor_id = d.id "
+            + "WHERE (:patientId IS NULL OR mr.patient_id = :patientId) "
+            + "AND (:registrationId IS NULL OR mr.registration_id = :registrationId) "
+            + "ORDER BY mr.create_time DESC",
+            nativeQuery = true)
+    List&lt;MedicalRecordVO&gt; findRecordVOList(@Param("patientId") Long patientId, @Param("registrationId") Long registrationId);
+
+    /**
+     * 按挂号ID查询病历详情
+     */
+    @Query(value = "SELECT mr.id, mr.registration_id AS registrationId, mr.patient_id AS patientId, "
+            + "mr.doctor_id AS doctorId, mr.chief_complaint AS chiefComplaint, mr.present_illness AS presentIllness, "
+            + "mr.past_history AS pastHistory, mr.physical_exam AS physicalExam, mr.diagnosis, mr.advice, "
+            + "mr.create_time AS createTime, "
+            + "p.name AS patientName, d.name AS doctorName "
+            + "FROM medical_record mr "
+            + "LEFT JOIN patient p ON mr.patient_id = p.id "
+            + "LEFT JOIN doctor d ON mr.doctor_id = d.id "
+            + "WHERE mr.registration_id = :registrationId",
+            nativeQuery = true)
+    MedicalRecordVO findRecordVOByRegistrationId(@Param("registrationId") Long registrationId);
+
+    /**
+     * 按ID查询病历详情（带患者+医生名称）
+     */
+    @Query(value = "SELECT mr.id, mr.registration_id AS registrationId, mr.patient_id AS patientId, "
+            + "mr.doctor_id AS doctorId, mr.chief_complaint AS chiefComplaint, mr.present_illness AS presentIllness, "
+            + "mr.past_history AS pastHistory, mr.physical_exam AS physicalExam, mr.diagnosis, mr.advice, "
+            + "mr.create_time AS createTime, "
+            + "p.name AS patientName, d.name AS doctorName "
+            + "FROM medical_record mr "
+            + "LEFT JOIN patient p ON mr.patient_id = p.id "
+            + "LEFT JOIN doctor d ON mr.doctor_id = d.id "
+            + "WHERE mr.id = :id",
+            nativeQuery = true)
+    MedicalRecordVO findRecordVOById(@Param("id") Long id);
+}
+</code></pre>
+<h2>【第 5 个类】类名：MedicineRepository</h2>
+<p class="meta">所属层：Repository 数据访问层 &nbsp;|&nbsp; 包路径：com.medicare.repository &nbsp;|&nbsp; 文件名：MedicineRepository.java</p>
+<pre><code>
+package com.medicare.repository;
+
+import com.medicare.entity.Medicine;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
+public interface MedicineRepository extends JpaRepository&lt;Medicine, Long&gt; {
+
+    List&lt;Medicine&gt; findByStatus(Integer status);
+
+    /**
+     * 安全扣减库存 — WHERE stock &gt;= :qty 防止库存负数
+     * @return 影响行数，0 表示库存不足
+     */
+    @Modifying
+    @Query("UPDATE Medicine m SET m.stock = m.stock - :qty WHERE m.id = :id AND m.stock &gt;= :qty")
+    int safeDecrementStock(@Param("id") Long id, @Param("qty") Integer qty);
+
+    /**
+     * 回增库存（处方作废时）
+     */
+    @Modifying
+    @Query("UPDATE Medicine m SET m.stock = m.stock + :qty WHERE m.id = :id")
+    int incrementStock(@Param("id") Long id, @Param("qty") Integer qty);
+
+    /**
+     * 低库存预警列表
+     */
+    @Query("SELECT m FROM Medicine m WHERE m.stock &lt;= m.safetyStock AND m.status = 1")
+    List&lt;Medicine&gt; findLowStockMedicines();
+
+    /**
+     * 按关键字搜索（名称/拼音码）
+     */
+    @Query("SELECT m FROM Medicine m WHERE m.status = 1 AND (m.name LIKE %:keyword% OR m.pinyinCode LIKE %:keyword%)")
+    List&lt;Medicine&gt; searchByKeyword(@Param("keyword") String keyword);
+
+    boolean existsByNameAndSpec(String name, String spec);
+    boolean existsByNameAndSpecAndIdNot(String name, String spec, Long id);
+}
+</code></pre>
+<h2>【第 6 个类】类名：PatientRepository</h2>
+<p class="meta">所属层：Repository 数据访问层 &nbsp;|&nbsp; 包路径：com.medicare.repository &nbsp;|&nbsp; 文件名：PatientRepository.java</p>
+<pre><code>
+package com.medicare.repository;
+
+import com.medicare.entity.Patient;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface PatientRepository extends JpaRepository&lt;Patient, Long&gt; {
+
+    boolean existsByIdCard(String idCard);
+    boolean existsByIdCardAndIdNot(String idCard, Long id);
+
+    Optional&lt;Patient&gt; findByIdCard(String idCard);
+
+    /**
+     * 按关键字搜索患者（姓名/身份证/手机号）
+     */
+    @Query("SELECT p FROM Patient p WHERE p.name LIKE %:keyword% OR p.idCard LIKE %:keyword% OR p.phone LIKE %:keyword%")
+    List&lt;Patient&gt; search(@Param("keyword") String keyword);
+}
+</code></pre>
+<h2>【第 7 个类】类名：PaymentRepository</h2>
+<p class="meta">所属层：Repository 数据访问层 &nbsp;|&nbsp; 包路径：com.medicare.repository &nbsp;|&nbsp; 文件名：PaymentRepository.java</p>
+<pre><code>
+package com.medicare.repository;
+
+import com.medicare.dto.PaymentVO;
+import com.medicare.entity.Payment;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+@Repository
+public interface PaymentRepository extends JpaRepository&lt;Payment, Long&gt; {
+
+    @Query(value = """
+        SELECT p.id, p.registration_id AS registrationId, p.prescription_id AS prescriptionId,
+               p.patient_id AS patientId, p.amount, p.payment_method AS paymentMethod,
+               p.status, p.remark, p.create_time AS createTime,
+               pt.name AS patientName,
+               CASE WHEN p.registration_id IS NOT NULL THEN '挂号费'
+                    WHEN p.prescription_id IS NOT NULL THEN '处方费'
+                    ELSE '其他' END AS registrationType
+        FROM payment p
+        LEFT JOIN patient pt ON p.patient_id = pt.id
+        WHERE (:patientId IS NULL OR p.patient_id = :patientId)
+          AND (:status IS NULL OR p.status = :status)
+        ORDER BY p.create_time DESC
+        """, nativeQuery = true)
+    List&lt;PaymentVO&gt; findPaymentVOList(@Param("patientId") Long patientId,
+                                       @Param("status") Integer status);
+
+    @Modifying
+    @Query("UPDATE Payment p SET p.status = 1 WHERE p.id = :id AND p.status = 0")
+    int pay(@Param("id") Long id);
+
+    @Modifying
+    @Query("UPDATE Payment p SET p.status = 2 WHERE p.id = :id AND p.status = 1")
+    int refund(@Param("id") Long id);
+
+    List&lt;Payment&gt; findByStatus(Integer status);
+
+    List&lt;Payment&gt; findByPatientIdOrderByCreateTimeDesc(Long patientId);
+
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.status = 1 AND DATE(p.createTime) = :date")
+    BigDecimal sumPaidToday(@Param("date") LocalDate date);
+
+    @Query("SELECT COUNT(p) FROM Payment p WHERE p.status = 0")
+    long countPending();
+}
+</code></pre>
+<h2>【第 8 个类】类名：PrescriptionItemRepository</h2>
+<p class="meta">所属层：Repository 数据访问层 &nbsp;|&nbsp; 包路径：com.medicare.repository &nbsp;|&nbsp; 文件名：PrescriptionItemRepository.java</p>
+<pre><code>
+package com.medicare.repository;
+
+import com.medicare.entity.PrescriptionItem;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface PrescriptionItemRepository extends JpaRepository&lt;PrescriptionItem, Long&gt; {
+
+    List&lt;PrescriptionItem&gt; findByPrescriptionId(Long prescriptionId);
+
+    void deleteByPrescriptionId(Long prescriptionId);
+}
+</code></pre>
+<h2>【第 9 个类】类名：PrescriptionRepository</h2>
+<p class="meta">所属层：Repository 数据访问层 &nbsp;|&nbsp; 包路径：com.medicare.repository &nbsp;|&nbsp; 文件名：PrescriptionRepository.java</p>
+<pre><code>
+package com.medicare.repository;
+
+import com.medicare.dto.PrescriptionListVO;
+import com.medicare.dto.PrescriptionVO;
+import com.medicare.entity.Prescription;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+public interface PrescriptionRepository extends JpaRepository&lt;Prescription, Long&gt; {
+
+    Optional&lt;Prescription&gt; findByRecordId(Long recordId);
+
+    List&lt;Prescription&gt; findByPatientIdOrderByCreateTimeDesc(Long patientId);
+
+    List&lt;Prescription&gt; findByStatus(Integer status);
+
+    /**
+     * 处方列表 — 3 表 LEFT JOIN 投影
+     */
+    @Query(value = "SELECT p.id, p.record_id AS recordId, p.patient_id AS patientId, p.doctor_id AS doctorId, "
+            + "p.total_amount AS totalAmount, p.status, p.create_time AS createTime, "
+            + "pat.name AS patientName, doc.name AS doctorName "
+            + "FROM prescription p "
+            + "LEFT JOIN patient pat ON p.patient_id = pat.id "
+            + "LEFT JOIN doctor doc ON p.doctor_id = doc.id "
+            + "WHERE (:patientId IS NULL OR p.patient_id = :patientId) "
+            + "AND (:today IS NULL OR DATE(p.create_time) = :today) "
+            + "ORDER BY p.create_time DESC",
+            nativeQuery = true)
+    List&lt;PrescriptionListVO&gt; findPrescriptionVOList(@Param("patientId") Long patientId, @Param("today") LocalDate today);
+
+    /**
+     * 取药 — 状态改为已取药(2)
+     */
+    @Modifying
+    @Query("UPDATE Prescription p SET p.status = 2 WHERE p.id = :id AND p.status IN (0, 1)")
+    int dispense(@Param("id") Long id);
+
+    /**
+     * 作废 — 状态改为已作废(3)
+     */
+    @Modifying
+    @Query("UPDATE Prescription p SET p.status = 3 WHERE p.id = :id AND p.status IN (0, 1)")
+    int cancel(@Param("id") Long id);
+
+    /**
+     * 标记已缴费 — 状态 0→1
+     */
+    @Modifying
+    @Query("UPDATE Prescription p SET p.status = 1 WHERE p.id = :id AND p.status = 0")
+    int markAsPaid(@Param("id") Long id);
+
+    /**
+     * 回退到待缴费 — 状态 1→0
+     */
+    @Modifying
+    @Query("UPDATE Prescription p SET p.status = 0 WHERE p.id = :id AND p.status = 1")
+    int rollbackToPending(@Param("id") Long id);
+
+    /**
+     * 按医生查询处方
+     */
+    List&lt;Prescription&gt; findByDoctorIdOrderByCreateTimeDesc(Long doctorId);
+}
+</code></pre>
+<h2>【第 10 个类】类名：RegistrationRepository</h2>
+<p class="meta">所属层：Repository 数据访问层 &nbsp;|&nbsp; 包路径：com.medicare.repository &nbsp;|&nbsp; 文件名：RegistrationRepository.java</p>
+<pre><code>
+package com.medicare.repository;
+
+import com.medicare.dto.RegistrationVO;
+import com.medicare.entity.Registration;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDate;
+import java.util.List;
+
+public interface RegistrationRepository extends JpaRepository&lt;Registration, Long&gt; {
+
+    /**
+     * 查询今日挂号列表 — 4 表 LEFT JOIN 投影
+     */
+    @Query(value = "SELECT r.id, r.patient_id AS patientId, r.schedule_id AS scheduleId, s.doctor_id AS doctorId, "
+            + "r.reg_time AS regTime, r.status, r.seq_no AS seqNo, r.fee, r.create_time AS createTime, "
+            + "p.name AS patientName, d.name AS doctorName, dep.name AS departmentName, s.time_slot AS timeSlot "
+            + "FROM registration r "
+            + "LEFT JOIN patient p ON r.patient_id = p.id "
+            + "LEFT JOIN schedule s ON r.schedule_id = s.id "
+            + "LEFT JOIN doctor d ON s.doctor_id = d.id "
+            + "LEFT JOIN department dep ON d.department_id = dep.id "
+            + "WHERE DATE(r.reg_time) = :date "
+            + "AND (:status IS NULL OR r.status = :status) "
+            + "ORDER BY r.reg_time DESC",
+            nativeQuery = true)
+    List&lt;RegistrationVO&gt; findTodayList(@Param("date") LocalDate date, @Param("status") Integer status);
+
+    /**
+     * 按医生查询候诊/就诊中列表
+     */
+    @Query(value = "SELECT r.id, r.patient_id AS patientId, r.schedule_id AS scheduleId, s.doctor_id AS doctorId, "
+            + "r.reg_time AS regTime, r.status, r.seq_no AS seqNo, r.fee, r.create_time AS createTime, "
+            + "p.name AS patientName, d.name AS doctorName, dep.name AS departmentName, s.time_slot AS timeSlot "
+            + "FROM registration r "
+            + "LEFT JOIN patient p ON r.patient_id = p.id "
+            + "LEFT JOIN schedule s ON r.schedule_id = s.id "
+            + "LEFT JOIN doctor d ON s.doctor_id = d.id "
+            + "LEFT JOIN department dep ON d.department_id = dep.id "
+            + "WHERE s.doctor_id = :doctorId AND r.status IN :statuses "
+            + "ORDER BY r.seq_no",
+            nativeQuery = true)
+    List&lt;RegistrationVO&gt; findByDoctorAndStatusIn(@Param("doctorId") Long doctorId, @Param("statuses") List&lt;Integer&gt; statuses);
+
+    /**
+     * 叫号 — 状态 0→1
+     */
+    @Modifying
+    @Query("UPDATE Registration r SET r.status = 1 WHERE r.id = :id AND r.status = 0")
+    int callPatient(@Param("id") Long id);
+
+    /**
+     * 完成就诊 — 状态 1→2
+     */
+    @Modifying
+    @Query("UPDATE Registration r SET r.status = 2 WHERE r.id = :id AND r.status = 1")
+    int completeRegistration(@Param("id") Long id);
+
+    /**
+     * 按排班统计挂号数（用于序号分配）
+     */
+    @Query("SELECT COUNT(r) FROM Registration r WHERE r.scheduleId = :scheduleId AND r.status &lt;&gt; 3")
+    long countByScheduleAndNotCancelled(@Param("scheduleId") Long scheduleId);
+
+    /**
+     * 按患者查询挂号记录
+     */
+    @Query(value = "SELECT r.id, r.patient_id AS patientId, r.schedule_id AS scheduleId, s.doctor_id AS doctorId, "
+            + "r.reg_time AS regTime, r.status, r.seq_no AS seqNo, r.fee, r.create_time AS createTime, "
+            + "p.name AS patientName, d.name AS doctorName, dep.name AS departmentName, s.time_slot AS timeSlot "
+            + "FROM registration r "
+            + "LEFT JOIN patient p ON r.patient_id = p.id "
+            + "LEFT JOIN schedule s ON r.schedule_id = s.id "
+            + "LEFT JOIN doctor d ON s.doctor_id = d.id "
+            + "LEFT JOIN department dep ON d.department_id = dep.id "
+            + "WHERE r.patient_id = :patientId "
+            + "ORDER BY r.reg_time DESC",
+            nativeQuery = true)
+    List&lt;RegistrationVO&gt; findByPatientId(@Param("patientId") Long patientId);
+}
+</code></pre>
+<h2>【第 11 个类】类名：ScheduleRepository</h2>
+<p class="meta">所属层：Repository 数据访问层 &nbsp;|&nbsp; 包路径：com.medicare.repository &nbsp;|&nbsp; 文件名：ScheduleRepository.java</p>
+<pre><code>
+package com.medicare.repository;
+
+import com.medicare.dto.ScheduleVO;
+import com.medicare.entity.Schedule;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDate;
+import java.util.List;
+
+public interface ScheduleRepository extends JpaRepository&lt;Schedule, Long&gt; {
+
+    /**
+     * 原子扣减号源 — WHERE remain_slots &gt; 0 防止超卖
+     * @return 影响行数，0 表示号源不足
+     */
+    @Modifying
+    @Query("UPDATE Schedule s SET s.remainSlots = s.remainSlots - 1 WHERE s.id = :id AND s.remainSlots &gt; 0")
+    int decrementRemain(@Param("id") Long id);
+
+    /**
+     * 原子回增号源（取消挂号时）
+     */
+    @Modifying
+    @Query("UPDATE Schedule s SET s.remainSlots = s.remainSlots + 1 WHERE s.id = :id")
+    int incrementRemain(@Param("id") Long id);
+
+    /**
+     * 查询排班列表（带医生+科室名称）
+     */
+    @Query(value = "SELECT s.id, s.doctor_id AS doctorId, s.work_date AS workDate, s.time_slot AS timeSlot, "
+            + "s.total_slots AS totalSlots, s.remain_slots AS remainSlots, s.create_time AS createTime, "
+            + "d.name AS doctorName, dep.name AS departmentName "
+            + "FROM schedule s LEFT JOIN doctor d ON s.doctor_id = d.id "
+            + "LEFT JOIN department dep ON d.department_id = dep.id "
+            + "WHERE (:date IS NULL OR s.work_date = :date) "
+            + "AND (:deptId IS NULL OR d.department_id = :deptId) "
+            + "ORDER BY s.work_date, s.time_slot",
+            nativeQuery = true)
+    List&lt;ScheduleVO&gt; findScheduleVOList(@Param("date") LocalDate date, @Param("deptId") Long deptId);
+
+    /**
+     * 查询可用号源（剩余 &gt; 0）
+     */
+    @Query(value = "SELECT s.id, s.doctor_id AS doctorId, s.work_date AS workDate, s.time_slot AS timeSlot, "
+            + "s.total_slots AS totalSlots, s.remain_slots AS remainSlots, s.create_time AS createTime, "
+            + "d.name AS doctorName, dep.name AS departmentName "
+            + "FROM schedule s LEFT JOIN doctor d ON s.doctor_id = d.id "
+            + "LEFT JOIN department dep ON d.department_id = dep.id "
+            + "WHERE s.remain_slots &gt; 0 "
+            + "AND (:date IS NULL OR s.work_date = :date) "
+            + "AND (:deptId IS NULL OR d.department_id = :deptId) "
+            + "ORDER BY s.work_date, s.time_slot",
+            nativeQuery = true)
+    List&lt;ScheduleVO&gt; findAvailableSchedules(@Param("date") LocalDate date, @Param("deptId") Long deptId);
+
+    /**
+     * 查询某天某医生已有几条排班（用于序号分配）
+     */
+    @Query("SELECT COUNT(s) FROM Schedule s WHERE s.doctorId = :doctorId AND s.workDate = :date")
+    long countByDoctorAndDate(@Param("doctorId") Long doctorId, @Param("date") LocalDate date);
+}
+</code></pre>
+<h2>【第 12 个类】类名：SysUserRepository</h2>
+<p class="meta">所属层：Repository 数据访问层 &nbsp;|&nbsp; 包路径：com.medicare.repository &nbsp;|&nbsp; 文件名：SysUserRepository.java</p>
+<pre><code>
+package com.medicare.repository;
+
+import com.medicare.entity.SysUser;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface SysUserRepository extends JpaRepository&lt;SysUser, Long&gt; {
+
+    Optional&lt;SysUser&gt; findByUsername(String username);
+
+    boolean existsByUsername(String username);
+    boolean existsByUsernameAndIdNot(String username, Long id);
+}
+</code></pre>
+</body></html>

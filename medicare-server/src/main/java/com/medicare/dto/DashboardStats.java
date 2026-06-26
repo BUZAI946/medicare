@@ -11,4 +11,6 @@ public class DashboardStats {
     private long todayRegCount;
     private long waitingCount;
     private long stockAlertCount;
+    private long pendingPaymentCount;
+    private String todayPaymentAmount;
 }
