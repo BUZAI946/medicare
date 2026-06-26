@@ -40,6 +40,15 @@ Thumbs.db
 *.swp
 *~
 
+# Personal documents
+*.pptx
+*.docx
+screenshots/
+*.py
+make_pptx.js
+generate_pdf.js
+~$*
+
 # Node / Frontend
 node_modules/
 dist/
